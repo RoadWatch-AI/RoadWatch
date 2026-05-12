@@ -68,40 +68,36 @@ function ComplaintForm({ lat, lon }) {
       console.log("Road Name:", roadName);
       console.log("Road Type:", roadType);
 
-      // -------------------- FORM DATA --------------------
-
-      const formData = new FormData();
-
-      formData.append("lat", lat);
-
-      formData.append("lon", lon);
-
-      formData.append("road_name", roadName);
-
-      formData.append("road_type", roadType);
-
-      formData.append("description", description);
-
-      formData.append("issue", "Pending AI Detection");
-
-      formData.append("severity", "Pending");
-
-      // Append Image
-      if (image) {
-
-        formData.append("image", image);
-
-      }
-
-      // -------------------- SEND TO BACKEND --------------------
-
+      // Send Complaint to Backend
       const backendResponse = await fetch(
         "http://127.0.0.1:5000/complaints",
         {
 
           method: "POST",
 
-          body: formData,
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+
+            lat: lat,
+
+            lon: lon,
+
+            road_name: roadName,
+
+            road_type: roadType,
+
+            description: description,
+
+            image_url: image ? image.name : null,
+
+            issue: "Pending AI Detection",
+
+            severity: "Pending",
+
+          }),
 
         }
       );

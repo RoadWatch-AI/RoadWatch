@@ -1,0 +1,36 @@
+
+---
+
+# ✅ CLEAN .gitignore
+
+Replace ENTIRE `.gitignore` with this:
+
+```gitignore
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# Environment files
+.env
+.env.*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build folders
+build/
+dist/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
