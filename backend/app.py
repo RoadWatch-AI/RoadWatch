@@ -7,7 +7,9 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# -------------------- IMAGE UPLOAD CONFIG --------------------
+# =========================================================
+#                    IMAGE UPLOAD CONFIG
+# =========================================================
 
 UPLOAD_FOLDER = "uploads"
 
@@ -16,31 +18,19 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# -------------------- DATABASE CONFIG --------------------
+# =========================================================
+#                    DATABASE CONFIG
+# =========================================================
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:sql%40123@localhost/roadwatch'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# -------------------- ROAD TABLE --------------------
-
-class Road(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    road_name = db.Column(db.String(100))
-
-    road_type = db.Column(db.String(50))
-
-    contractor = db.Column(db.String(100))
-
-    last_repair_date = db.Column(db.String(100))
-
-    sanctioned_amount = db.Column(db.Float)
-
-    spent_amount = db.Column(db.Float)
-
+# =========================================================
+#                    TABLES
+# =========================================================
 
 # -------------------- USER TABLE --------------------
 
@@ -87,11 +77,50 @@ class Contractor(db.Model):
 
     contractor_name = db.Column(db.String(100))
 
-    budget_allocated = db.Column(db.Float)
+    contact_person = db.Column(db.String(100))
 
-    amount_spent = db.Column(db.Float)
+    phone = db.Column(db.String(20))
 
-    repair_count = db.Column(db.Integer)
+    email = db.Column(db.String(100))
+
+    total_projects = db.Column(db.Integer)
+
+    total_repairs = db.Column(db.Integer)
+
+    performance_score = db.Column(db.Float)
+
+
+# -------------------- ROAD PROJECT TABLE --------------------
+
+class RoadProject(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    road_name = db.Column(db.String(100))
+
+    road_type = db.Column(db.String(50))
+
+    area = db.Column(db.String(100))
+
+    contractor_id = db.Column(
+        db.Integer,
+        db.ForeignKey('contractor.id')
+    )
+
+    authority_id = db.Column(
+        db.Integer,
+        db.ForeignKey('authority.id')
+    )
+
+    allocated_budget = db.Column(db.Float)
+
+    spent_budget = db.Column(db.Float)
+
+    project_status = db.Column(db.String(20))
+
+    last_repair_date = db.Column(db.DateTime)
+
+    next_inspection_date = db.Column(db.DateTime)
 
 
 # -------------------- COMPLAINT TABLE --------------------
@@ -107,6 +136,8 @@ class Complaint(db.Model):
     road_name = db.Column(db.String(100))
 
     road_type = db.Column(db.String(50))
+
+    area = db.Column(db.String(100))
 
     description = db.Column(db.Text)
 
@@ -131,6 +162,11 @@ class Complaint(db.Model):
         db.ForeignKey('contractor.id')
     )
 
+    project_id = db.Column(
+        db.Integer,
+        db.ForeignKey('road_project.id')
+    )
+
     created_at = db.Column(
         db.DateTime,
         server_default=db.func.now()
@@ -145,7 +181,51 @@ class Complaint(db.Model):
     resolved_at = db.Column(db.DateTime)
 
 
-# -------------------- HOME ROUTE --------------------
+# -------------------- REPAIR HISTORY TABLE --------------------
+
+class RepairHistory(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    complaint_id = db.Column(
+        db.Integer,
+        db.ForeignKey('complaint.id')
+    )
+
+    repaired_by = db.Column(db.String(100))
+
+    repair_date = db.Column(db.DateTime)
+
+    remarks = db.Column(db.Text)
+
+    repair_cost = db.Column(db.Float)
+
+
+# -------------------- AI PREDICTIONS TABLE --------------------
+
+class AIPrediction(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    complaint_id = db.Column(
+        db.Integer,
+        db.ForeignKey('complaint.id')
+    )
+
+    detected_issue = db.Column(db.String(50))
+
+    confidence_score = db.Column(db.Float)
+
+    predicted_severity = db.Column(db.String(20))
+
+    processed_at = db.Column(
+        db.DateTime,
+        server_default=db.func.now()
+    )
+
+# =========================================================
+#                    HOME ROUTE
+# =========================================================
 
 @app.route("/")
 def home():
@@ -153,77 +233,12 @@ def home():
 
 
 # =========================================================
-#                    USER APIs
-# =========================================================
-
-# -------------------- SIGNUP --------------------
-
-@app.route("/signup", methods=["POST"])
-def signup():
-
-    data = request.get_json()
-
-    new_user = User(
-
-        name=data["name"],
-
-        email=data["email"],
-
-        phone=data["phone"],
-
-        password=data["password"],
-
-        role=data["role"]
-
-    )
-
-    db.session.add(new_user)
-
-    db.session.commit()
-
-    return jsonify({
-        "message": "User created successfully"
-    })
-
-
-# -------------------- GET USERS --------------------
-
-@app.route("/users", methods=["GET"])
-def get_users():
-
-    users = User.query.all()
-
-    output = []
-
-    for user in users:
-
-        output.append({
-
-            "id": user.id,
-
-            "name": user.name,
-
-            "email": user.email,
-
-            "phone": user.phone,
-
-            "role": user.role
-
-        })
-
-    return jsonify(output)
-
-
-# =========================================================
 #                    COMPLAINT APIs
 # =========================================================
-
-# -------------------- CREATE COMPLAINT --------------------
 
 @app.route("/complaints", methods=["POST"])
 def create_complaint():
 
-    # FORM DATA
     lat = request.form.get("lat")
 
     lon = request.form.get("lon")
@@ -232,15 +247,13 @@ def create_complaint():
 
     road_type = request.form.get("road_type")
 
+    area = request.form.get("area")
+
     description = request.form.get("description")
 
     issue = request.form.get("issue")
 
     severity = request.form.get("severity")
-
-    authority_id = request.form.get("authority_id")
-
-    contractor_id = request.form.get("contractor_id")
 
     # -------------------- ROAD TYPE NORMALIZATION --------------------
 
@@ -251,10 +264,36 @@ def create_complaint():
         road_type = "SH"
 
     elif road_type == "tertiary":
-        road_type = "MH"
+        road_type = "MDR"
+
+    elif road_type == "trunk":
+        road_type = "NH"
 
     else:
         road_type = "City Road"
+
+    # -------------------- FIND MATCHING ROAD PROJECT --------------------
+
+    matched_project = RoadProject.query.filter_by(
+        road_name=road_name
+    ).first()
+
+    authority_id = None
+
+    contractor_id = None
+
+    project_id = None
+
+    if matched_project:
+
+        authority_id = matched_project.authority_id
+
+        contractor_id = matched_project.contractor_id
+
+        project_id = matched_project.id
+
+        if not area:
+            area = matched_project.area
 
     # -------------------- IMAGE HANDLING --------------------
 
@@ -285,6 +324,8 @@ def create_complaint():
 
         road_type=road_type,
 
+        area=area,
+
         description=description,
 
         image_url=image_path,
@@ -295,7 +336,9 @@ def create_complaint():
 
         authority_id=authority_id,
 
-        contractor_id=contractor_id
+        contractor_id=contractor_id,
+
+        project_id=project_id
 
     )
 
@@ -304,11 +347,17 @@ def create_complaint():
     db.session.commit()
 
     return jsonify({
-        "message": "Complaint stored successfully"
+
+        "message": "Complaint stored successfully",
+
+        "matched_project": project_id,
+
+        "authority_id": authority_id,
+
+        "contractor_id": contractor_id
+
     })
 
-
-# -------------------- GET ALL COMPLAINTS --------------------
 
 @app.route("/complaints", methods=["GET"])
 def get_complaints():
@@ -331,6 +380,8 @@ def get_complaints():
 
             "road_type": complaint.road_type,
 
+            "area": complaint.area,
+
             "description": complaint.description,
 
             "image_url": complaint.image_url,
@@ -345,6 +396,8 @@ def get_complaints():
 
             "contractor_id": complaint.contractor_id,
 
+            "project_id": complaint.project_id,
+
             "created_at": complaint.created_at
 
         })
@@ -352,135 +405,14 @@ def get_complaints():
     return jsonify(output)
 
 
-# -------------------- GET SINGLE COMPLAINT --------------------
-
-@app.route("/complaints/<int:id>", methods=["GET"])
-def get_complaint(id):
-
-    complaint = Complaint.query.get(id)
-
-    if not complaint:
-        return jsonify({
-            "message": "Complaint not found"
-        }), 404
-
-    return jsonify({
-
-        "id": complaint.id,
-
-        "lat": complaint.lat,
-
-        "lon": complaint.lon,
-
-        "road_name": complaint.road_name,
-
-        "road_type": complaint.road_type,
-
-        "description": complaint.description,
-
-        "image_url": complaint.image_url,
-
-        "issue": complaint.issue,
-
-        "severity": complaint.severity,
-
-        "status": complaint.status
-
-    })
-
-
-# -------------------- UPDATE COMPLAINT --------------------
-
-@app.route("/complaints/<int:id>", methods=["PUT"])
-def update_complaint(id):
-
-    complaint = Complaint.query.get(id)
-
-    if not complaint:
-        return jsonify({
-            "message": "Complaint not found"
-        }), 404
-
-    data = request.get_json()
-
-    complaint.issue = data["issue"]
-
-    complaint.severity = data["severity"]
-
-    complaint.description = data["description"]
-
-    complaint.status = data["status"]
-
-    db.session.commit()
-
-    return jsonify({
-        "message": "Complaint updated successfully"
-    })
-
-
-# -------------------- DELETE COMPLAINT --------------------
-
-@app.route("/complaints/<int:id>", methods=["DELETE"])
-def delete_complaint(id):
-
-    complaint = Complaint.query.get(id)
-
-    if not complaint:
-        return jsonify({
-            "message": "Complaint not found"
-        }), 404
-
-    db.session.delete(complaint)
-
-    db.session.commit()
-
-    return jsonify({
-        "message": "Complaint deleted successfully"
-    })
-
-
 # =========================================================
-#                    ROAD APIs
+#                    ROAD PROJECT APIs
 # =========================================================
 
-# -------------------- CREATE ROAD --------------------
+@app.route("/road-projects", methods=["GET"])
+def get_road_projects():
 
-@app.route("/roads", methods=["POST"])
-def create_road():
-
-    data = request.get_json()
-
-    new_road = Road(
-
-        road_name=data["road_name"],
-
-        road_type=data["road_type"],
-
-        contractor=data["contractor"],
-
-        last_repair_date=data["last_repair_date"],
-
-        sanctioned_amount=data["sanctioned_amount"],
-
-        spent_amount=data["spent_amount"]
-
-    )
-
-    db.session.add(new_road)
-
-    db.session.commit()
-
-    return jsonify({
-        "message": "Road created successfully"
-    })
-
-
-# -------------------- GET ALL ROADS --------------------
-
-@app.route("/roads", methods=["GET"])
-def get_roads():
-
-    roads = Road.query.all()
+    roads = RoadProject.query.all()
 
     output = []
 
@@ -494,102 +426,25 @@ def get_roads():
 
             "road_type": road.road_type,
 
-            "contractor": road.contractor,
+            "area": road.area,
+
+            "contractor_id": road.contractor_id,
+
+            "authority_id": road.authority_id,
+
+            "allocated_budget": road.allocated_budget,
+
+            "spent_budget": road.spent_budget,
+
+            "project_status": road.project_status,
 
             "last_repair_date": road.last_repair_date,
 
-            "sanctioned_amount": road.sanctioned_amount,
-
-            "spent_amount": road.spent_amount
+            "next_inspection_date": road.next_inspection_date
 
         })
 
     return jsonify(output)
-
-
-# -------------------- GET SINGLE ROAD --------------------
-
-@app.route("/roads/<int:id>", methods=["GET"])
-def get_road(id):
-
-    road = Road.query.get(id)
-
-    if not road:
-        return jsonify({
-            "message": "Road not found"
-        }), 404
-
-    return jsonify({
-
-        "id": road.id,
-
-        "road_name": road.road_name,
-
-        "road_type": road.road_type,
-
-        "contractor": road.contractor,
-
-        "last_repair_date": road.last_repair_date,
-
-        "sanctioned_amount": road.sanctioned_amount,
-
-        "spent_amount": road.spent_amount
-
-    })
-
-
-# -------------------- UPDATE ROAD --------------------
-
-@app.route("/roads/<int:id>", methods=["PUT"])
-def update_road(id):
-
-    road = Road.query.get(id)
-
-    if not road:
-        return jsonify({
-            "message": "Road not found"
-        }), 404
-
-    data = request.get_json()
-
-    road.road_name = data["road_name"]
-
-    road.road_type = data["road_type"]
-
-    road.contractor = data["contractor"]
-
-    road.last_repair_date = data["last_repair_date"]
-
-    road.sanctioned_amount = data["sanctioned_amount"]
-
-    road.spent_amount = data["spent_amount"]
-
-    db.session.commit()
-
-    return jsonify({
-        "message": "Road updated successfully"
-    })
-
-
-# -------------------- DELETE ROAD --------------------
-
-@app.route("/roads/<int:id>", methods=["DELETE"])
-def delete_road(id):
-
-    road = Road.query.get(id)
-
-    if not road:
-        return jsonify({
-            "message": "Road not found"
-        }), 404
-
-    db.session.delete(road)
-
-    db.session.commit()
-
-    return jsonify({
-        "message": "Road deleted successfully"
-    })
 
 
 # =========================================================
