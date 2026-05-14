@@ -7,7 +7,10 @@ function ComplaintForm({ lat, lon }) {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
 
-  // Handle image upload
+  // =========================================================
+  //                  HANDLE IMAGE UPLOAD
+  // =========================================================
+
   const handleImageChange = (e) => {
 
     const file = e.target.files[0];
@@ -22,7 +25,10 @@ function ComplaintForm({ lat, lon }) {
 
   };
 
-  // Handle drag & drop
+  // =========================================================
+  //                  HANDLE DRAG & DROP
+  // =========================================================
+
   const handleDrop = (e) => {
 
     e.preventDefault();
@@ -39,14 +45,20 @@ function ComplaintForm({ lat, lon }) {
 
   };
 
-  // Handle submit
+  // =========================================================
+  //                  HANDLE SUBMIT
+  // =========================================================
+
   const handleSubmit = async (e) => {
 
     e.preventDefault();
 
     try {
 
-      // Reverse Geocoding using OpenStreetMap
+      // =========================================================
+      //          REVERSE GEOCODING USING OPENSTREETMAP
+      // =========================================================
+
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
       );
@@ -55,49 +67,66 @@ function ComplaintForm({ lat, lon }) {
 
       console.log(locationData);
 
-      // Extract Road Name
+      // ---------------- ROAD NAME ----------------
+
       const roadName =
         locationData.address.road ||
         locationData.address.suburb ||
         "Unknown Road";
 
-      // Extract Road Type
+      // ---------------- ROAD TYPE ----------------
+
       const roadType =
         locationData.type || "Unknown";
+
+      // ---------------- AREA ----------------
+
+      const area =
+        locationData.address.suburb ||
+        locationData.address.city ||
+        locationData.address.town ||
+        "Unknown Area";
 
       console.log("Road Name:", roadName);
       console.log("Road Type:", roadType);
 
-      // Send Complaint to Backend
+      // =========================================================
+      //                  CREATE FORM DATA
+      // =========================================================
+
+      const formData = new FormData();
+
+      formData.append("lat", lat);
+
+      formData.append("lon", lon);
+
+      formData.append("road_name", roadName);
+
+      formData.append("road_type", roadType);
+
+      formData.append("area", area);
+
+      formData.append("description", description);
+
+      // ---------------- IMAGE ----------------
+
+      if (image) {
+
+        formData.append("image", image);
+
+      }
+
+      // =========================================================
+      //                  SEND TO BACKEND
+      // =========================================================
+
       const backendResponse = await fetch(
         "http://127.0.0.1:5000/complaints",
         {
 
           method: "POST",
 
-          headers: {
-            "Content-Type": "application/json"
-          },
-
-          body: JSON.stringify({
-
-            lat: lat,
-
-            lon: lon,
-
-            road_name: roadName,
-
-            road_type: roadType,
-
-            description: description,
-
-            image_url: image ? image.name : null,
-
-            issue: "Pending AI Detection",
-
-            severity: "Pending",
-
-          }),
+          body: formData,
 
         }
       );
@@ -106,7 +135,19 @@ function ComplaintForm({ lat, lon }) {
 
       console.log(data);
 
-      alert("Complaint Submitted Successfully!");
+      alert(
+        `Complaint Submitted Successfully!\n\nIssue: ${data.issue}\nSeverity: ${data.severity}`
+      );
+
+      // =========================================================
+      //                  RESET FORM
+      // =========================================================
+
+      setDescription("");
+
+      setImage(null);
+
+      setPreview(null);
 
     }
 
@@ -137,7 +178,10 @@ function ComplaintForm({ lat, lon }) {
       }}
     >
 
-      {/* Heading */}
+      {/* =========================================================
+                          HEADING
+      ========================================================= */}
+
       <h2
         style={{
           marginBottom: "20px",
@@ -149,7 +193,10 @@ function ComplaintForm({ lat, lon }) {
         Report Road Issue
       </h2>
 
-      {/* Location Status */}
+      {/* =========================================================
+                      LOCATION STATUS
+      ========================================================= */}
+
       <div
         style={{
           background: "#f1f5f9",
@@ -165,7 +212,10 @@ function ComplaintForm({ lat, lon }) {
         📍 Location Captured Successfully
       </div>
 
-      {/* Upload Box */}
+      {/* =========================================================
+                          UPLOAD BOX
+      ========================================================= */}
+
       <label
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
@@ -192,7 +242,10 @@ function ComplaintForm({ lat, lon }) {
           style={{ display: "none" }}
         />
 
-        {/* Show uploaded image */}
+        {/* =========================================================
+                        IMAGE PREVIEW
+        ========================================================= */}
+
         {preview ? (
 
           <img
@@ -234,7 +287,10 @@ function ComplaintForm({ lat, lon }) {
 
       </label>
 
-      {/* Description */}
+      {/* =========================================================
+                          DESCRIPTION
+      ========================================================= */}
+
       <textarea
         placeholder="Issue Description..."
         value={description}
@@ -253,7 +309,10 @@ function ComplaintForm({ lat, lon }) {
         }}
       />
 
-      {/* Submit Button */}
+      {/* =========================================================
+                        SUBMIT BUTTON
+      ========================================================= */}
+
       <button
         onClick={handleSubmit}
         style={{

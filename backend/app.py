@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -29,7 +29,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# -------------------- AI MODEL --------------------
+# =========================================================
+#                    AI MODEL
+# =========================================================
 
 model = YOLO("models/YOLOv8_Small_RDD.pt")
 
@@ -41,6 +43,11 @@ CLASS_MAPPING = {
     3: "Pothole"
 
 }
+
+# =========================================================
+#                    TABLES
+# =========================================================
+
 # -------------------- ROAD TABLE --------------------
 
 class Road(db.Model):
@@ -59,9 +66,6 @@ class Road(db.Model):
 
     spent_amount = db.Column(db.Float)
 
-# =========================================================
-#                    TABLES
-# =========================================================
 
 # -------------------- USER TABLE --------------------
 
@@ -262,6 +266,17 @@ class AIPrediction(db.Model):
 def home():
     return "RoadWatch Backend Running"
 
+# =========================================================
+#               IMAGE SERVING ROUTE
+# =========================================================
+
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+
+    return send_from_directory(
+        app.config['UPLOAD_FOLDER'],
+        filename
+    )
 
 # =========================================================
 #                    COMPLAINT APIs
@@ -281,10 +296,6 @@ def create_complaint():
     area = request.form.get("area")
 
     description = request.form.get("description")
-
-    issue = request.form.get("issue")
-
-    severity = request.form.get("severity")
 
     # -------------------- ROAD TYPE NORMALIZATION --------------------
 
@@ -326,11 +337,19 @@ def create_complaint():
         if not area:
             area = matched_project.area
 
-    # -------------------- IMAGE HANDLING --------------------
+    # =========================================================
+    #                    IMAGE HANDLING
+    # =========================================================
 
     image = request.files.get("image")
 
     image_path = None
+
+    issue = "AI Uncertain"
+
+    severity = "LOW"
+
+    confidence_score = 0
 
     if image:
 
@@ -343,7 +362,60 @@ def create_complaint():
 
         image.save(image_path)
 
-    # -------------------- STORE COMPLAINT --------------------
+        # =========================================================
+        #                    AI DETECTION
+        # =========================================================
+
+        try:
+
+            results = model(image_path, conf=0.55)
+
+            highest_conf = 0
+
+            for result in results:
+
+                for box in result.boxes:
+
+                    class_id = int(box.cls[0])
+
+                    confidence = float(box.conf[0])
+
+                    if confidence > highest_conf:
+
+                        highest_conf = confidence
+
+                        confidence_score = round(confidence, 2)
+
+                        issue = CLASS_MAPPING.get(
+                            class_id,
+                            "AI Uncertain"
+                        )
+
+            # -------------------- SEVERITY --------------------
+
+            if highest_conf >= 0.85:
+
+                severity = "HIGH"
+
+            elif highest_conf >= 0.65:
+
+                severity = "MEDIUM"
+
+            else:
+
+                severity = "LOW"
+
+        except Exception as e:
+
+            print("AI ERROR:", e)
+
+            issue = "AI Uncertain"
+
+            severity = "LOW"
+
+    # =========================================================
+    #                    STORE COMPLAINT
+    # =========================================================
 
     new_complaint = Complaint(
 
@@ -377,15 +449,35 @@ def create_complaint():
 
     db.session.commit()
 
+    # =========================================================
+    #                    STORE AI PREDICTION
+    # =========================================================
+
+    ai_prediction = AIPrediction(
+
+        complaint_id=new_complaint.id,
+
+        detected_issue=issue,
+
+        confidence_score=confidence_score,
+
+        predicted_severity=severity
+
+    )
+
+    db.session.add(ai_prediction)
+
+    db.session.commit()
+
     return jsonify({
 
         "message": "Complaint stored successfully",
 
-        "matched_project": project_id,
+        "issue": issue,
 
-        "authority_id": authority_id,
+        "severity": severity,
 
-        "contractor_id": contractor_id
+        "image_url": image_path
 
     })
 
@@ -435,7 +527,6 @@ def get_complaints():
 
     return jsonify(output)
 
-
 # =========================================================
 #                    ROAD PROJECT APIs
 # =========================================================
@@ -476,7 +567,6 @@ def get_road_projects():
         })
 
     return jsonify(output)
-
 
 # =========================================================
 #                    RUN APP
