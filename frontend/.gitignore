@@ -1,11 +1,3 @@
-
----
-
-# ✅ CLEAN .gitignore
-
-Replace ENTIRE `.gitignore` with this:
-
-```gitignore
 # Python
 venv/
 __pycache__/
@@ -13,6 +5,9 @@ __pycache__/
 
 # Node
 node_modules/
+
+# Uploads
+backend/uploads/
 
 # Environment files
 .env
