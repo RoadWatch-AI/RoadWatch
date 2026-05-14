@@ -355,13 +355,14 @@ def create_complaint():
 
         filename = secure_filename(image.filename)
 
-        image_path = os.path.join(
-            app.config["UPLOAD_FOLDER"],
-            filename
-        )
+        image_path = f"uploads/{filename}"
 
-        image.save(image_path)
-
+        image.save(
+        os.path.join(
+        app.config["UPLOAD_FOLDER"],
+        filename
+    )
+)
         # =========================================================
         #                    AI DETECTION
         # =========================================================
@@ -491,6 +492,34 @@ def get_complaints():
 
     for complaint in complaints:
 
+        project = None
+        contractor = None
+        authority = None
+
+        # ---------------- PROJECT ----------------
+
+        if complaint.project_id:
+
+            project = RoadProject.query.get(
+                complaint.project_id
+            )
+
+        # ---------------- CONTRACTOR ----------------
+
+        if complaint.contractor_id:
+
+            contractor = Contractor.query.get(
+                complaint.contractor_id
+            )
+
+        # ---------------- AUTHORITY ----------------
+
+        if complaint.authority_id:
+
+            authority = Authority.query.get(
+                complaint.authority_id
+            )
+
         output.append({
 
             "id": complaint.id,
@@ -515,18 +544,37 @@ def get_complaints():
 
             "status": complaint.status,
 
-            "authority_id": complaint.authority_id,
+            # ---------------- CONTRACTOR ----------------
 
-            "contractor_id": complaint.contractor_id,
+            "contractor_name":
 
-            "project_id": complaint.project_id,
+                contractor.contractor_name
+                if contractor else "Not Assigned",
+
+            # ---------------- AUTHORITY ----------------
+
+            "authority_name":
+
+                authority.authority_name
+                if authority else "Not Assigned",
+
+            # ---------------- BUDGET ----------------
+
+            "allocated_budget":
+
+                project.allocated_budget
+                if project else 0,
+
+            "spent_budget":
+
+                project.spent_budget
+                if project else 0,
 
             "created_at": complaint.created_at
 
         })
 
     return jsonify(output)
-
 # =========================================================
 #                    ROAD PROJECT APIs
 # =========================================================

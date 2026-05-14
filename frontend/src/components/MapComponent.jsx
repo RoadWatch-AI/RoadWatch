@@ -244,26 +244,68 @@ function MapComponent() {
             position={[c.lat, c.lon]}
             icon={c.icon}
           >
-
             <Popup>
 
-              <div>
+  <div style={{ width: "260px" }}>
 
-                <h3>{c.issue}</h3>
+    <h3>{c.road_name}</h3>
 
-                <p>Severity: {c.severity}</p>
+    <p>
+      <strong>Issue:</strong> {c.issue}
+    </p>
 
-                <p>Status: {c.status}</p>
+    <p>
+      <strong>Severity:</strong> {c.severity}
+    </p>
 
-                <p>Road: {c.road_name}</p>
+    <p>
+      <strong>Road Type:</strong> {c.road_type}
+    </p>
 
-                <p>Road Type: {c.road_type}</p>
+    <p>
+      <strong>Contractor:</strong>
+      {c.contractor_name}
+    </p>
 
-                <p>Description: {c.description}</p>
+    <p>
+      <strong>Authority:</strong>
+      {c.authority_name}
+    </p>
 
-              </div>
+    <p>
+      <strong>Budget Allocated:</strong>
+      ₹{c.allocated_budget}
+    </p>
 
-            </Popup>
+    <p>
+      <strong>Budget Spent:</strong>
+      ₹{c.spent_budget}
+    </p>
+
+    <p>
+      <strong>Description:</strong>
+      {c.description}
+    </p>
+
+    {c.image_url && (
+
+      <img
+        src={`http://127.0.0.1:5000/${c.image_url}`}
+        alt="Road Issue"
+        style={{
+          width: "100%",
+          height: "140px",
+          objectFit: "cover",
+          borderRadius: "10px",
+          marginTop: "10px"
+        }}
+      />
+
+    )}
+
+  </div>
+
+</Popup>
 
           </Marker>
 
