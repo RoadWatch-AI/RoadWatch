@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+from ultralytics import YOLO
 import os
 
 app = Flask(__name__)
@@ -23,6 +24,18 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+# -------------------- AI MODEL --------------------
+
+model = YOLO("models/YOLOv8_Small_RDD.pt")
+
+CLASS_MAPPING = {
+
+    0: "Crack",
+    1: "Crack",
+    2: "Crack",
+    3: "Pothole"
+
+}
 # -------------------- ROAD TABLE --------------------
 
 class Road(db.Model):
