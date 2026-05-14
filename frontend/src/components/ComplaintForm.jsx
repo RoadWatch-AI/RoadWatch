@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Upload } from "lucide-react";
 
-function ComplaintForm({ lat, lon }) {
+function ComplaintForm({
+  lat,
+  lon,
+  refreshComplaints
+}) {
 
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
@@ -136,8 +140,9 @@ function ComplaintForm({ lat, lon }) {
       console.log(data);
 
       alert(
-        `Complaint Submitted Successfully!\n\nIssue: ${data.issue}\nSeverity: ${data.severity}`
+        `Complaint Submitted Successfully!\n\n`
       );
+      refreshComplaints();
 
       // =========================================================
       //                  RESET FORM
