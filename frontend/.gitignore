@@ -29,3 +29,9 @@ dist/
 
 # OS files
 .DS_Store
+
+backend/runs/
+backend/uploads/
+backend/models/*.pt
+frontend/node_modules/
+__pycache__/
