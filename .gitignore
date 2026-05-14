@@ -1,0 +1,24 @@
+# Python
+backend/venv/
+backend/__pycache__/
+*.pyc
+
+# Uploads
+backend/uploads/
+
+# Node
+node_modules/
+
+# Environment files
+.env
+.env.*
+
+# Logs
+logs
+*.log
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
