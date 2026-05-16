@@ -2,7 +2,10 @@ import {
   BrowserRouter,
   Routes,
   Route,
+  Navigate,
 } from "react-router-dom";
+
+import { useState, useEffect } from "react";
 
 import "./App.css";
 
@@ -12,7 +15,49 @@ import UserDashboard from "./components/UserDashboard";
 
 import MyComplaints from "./components/MyComplaints";
 
+import Login from "./components/Login";
+
 function App() {
+
+  const [isLoggedIn, setIsLoggedIn] =
+    useState(false);
+
+  // =========================================================
+  // CHECK EXISTING JWT TOKEN
+  // =========================================================
+
+  useEffect(() => {
+
+    const token =
+      localStorage.getItem("token");
+
+    if (token) {
+
+      setIsLoggedIn(true);
+
+    }
+
+  }, []);
+
+  // =========================================================
+  // SHOW LOGIN
+  // =========================================================
+
+  if (!isLoggedIn) {
+
+    return (
+
+      <Login
+        setIsLoggedIn={setIsLoggedIn}
+      />
+
+    );
+
+  }
+
+  // =========================================================
+  // MAIN ROUTES
+  // =========================================================
 
   return (
 
@@ -34,11 +79,18 @@ function App() {
           element={<MapComponent />}
         />
 
-        {/* ALL COMPLAINTS PAGE */}
+        {/* MY COMPLAINTS */}
 
         <Route
           path="/complaints"
           element={<MyComplaints />}
+        />
+
+        {/* INVALID ROUTES */}
+
+        <Route
+          path="*"
+          element={<Navigate to="/" />}
         />
 
       </Routes>
