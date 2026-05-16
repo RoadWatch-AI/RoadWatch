@@ -19,47 +19,41 @@ import "leaflet/dist/leaflet.css";
 import ComplaintForm from "./ComplaintForm";
 
 // =========================================================
-// SEVERITY MARKERS
+//                  SEVERITY MARKERS
 // =========================================================
 
+// HIGH Severity - Red Marker
 const highIcon = new L.Icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
-
   shadowUrl:
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-
   iconSize: [25, 41],
-
   iconAnchor: [12, 41],
 });
 
+// MEDIUM Severity - Orange Marker
 const mediumIcon = new L.Icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png",
-
   shadowUrl:
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-
   iconSize: [25, 41],
-
   iconAnchor: [12, 41],
 });
 
+// LOW Severity - Yellow Marker
 const lowIcon = new L.Icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png",
-
   shadowUrl:
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-
   iconSize: [25, 41],
-
   iconAnchor: [12, 41],
 });
 
 // =========================================================
-// LIVE LOCATION DOT
+//              LIVE CURRENT LOCATION DOT
 // =========================================================
 
 const currentDotIcon = L.divIcon({
@@ -68,13 +62,46 @@ const currentDotIcon = L.divIcon({
 
   html: `
     <div style="
-      width:18px;
-      height:18px;
-      background:#2563eb;
-      border:3px solid white;
-      border-radius:50%;
-      box-shadow:0 0 30px rgba(37,99,235,0.9);
-    "></div>
+      position: relative;
+      width: 18px;
+      height: 18px;
+    ">
+
+      <div style="
+        position:absolute;
+        width:18px;
+        height:18px;
+        background:#3b82f6;
+        border-radius:50%;
+        opacity:0.6;
+        animation:pulse 1.2s infinite;
+      "></div>
+
+      <div style="
+        position:absolute;
+        width:18px;
+        height:18px;
+        background:#2563eb;
+        border:3px solid white;
+        border-radius:50%;
+        box-shadow:0 0 40px rgba(37,99,235,0.9);
+      "></div>
+
+      <style>
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+            opacity: 0.5;
+          }
+
+          100% {
+            transform: scale(4);
+            opacity: 0;
+          }
+        }
+      </style>
+
+    </div>
   `,
 
   iconSize: [18, 18],
@@ -84,7 +111,7 @@ const currentDotIcon = L.divIcon({
 });
 
 // =========================================================
-// RECENTER MAP
+//                  RECENTER MAP
 // =========================================================
 
 function RecenterMap({ location }) {
@@ -101,7 +128,7 @@ function RecenterMap({ location }) {
 }
 
 // =========================================================
-// CLICK LOCATION
+//              CAPTURE MAP CLICK
 // =========================================================
 
 function LocationMarker({ setLat, setLon }) {
@@ -122,23 +149,26 @@ function LocationMarker({ setLat, setLon }) {
 }
 
 // =========================================================
-// MAIN COMPONENT
+//                  MAIN COMPONENT
 // =========================================================
 
 function MapComponent() {
 
+  // Selected complaint coordinates
   const [lat, setLat] = useState(null);
 
   const [lon, setLon] = useState(null);
 
+  // User current location
   const [currentLocation, setCurrentLocation] =
     useState(null);
 
+  // Backend complaints
   const [complaints, setComplaints] =
     useState([]);
 
   // =========================================================
-  // ROUTE PARAMS
+  //              ROUTE PARAMS
   // =========================================================
 
   const location = useLocation();
@@ -151,7 +181,7 @@ function MapComponent() {
   const focusedLon = params.get("lon");
 
   // =========================================================
-  // GET CURRENT LOCATION
+  //              GET CURRENT LOCATION
   // =========================================================
 
   useEffect(() => {
@@ -178,7 +208,7 @@ function MapComponent() {
   }, []);
 
   // =========================================================
-  // FETCH COMPLAINTS
+  //              FETCH COMPLAINTS
   // =========================================================
 
   const fetchComplaints = () => {
@@ -215,7 +245,7 @@ function MapComponent() {
   }, []);
 
   // =========================================================
-  // LOADING
+  //                  LOADING SCREEN
   // =========================================================
 
   if (!currentLocation) {
@@ -229,6 +259,7 @@ function MapComponent() {
           justifyContent: "center",
           alignItems: "center",
           fontSize: "24px",
+          fontFamily: "Arial",
         }}
       >
         Loading Map...
@@ -239,7 +270,7 @@ function MapComponent() {
   }
 
   // =========================================================
-  // MAP CENTER
+  //                  MAP CENTER
   // =========================================================
 
   const mapCenter =
@@ -254,7 +285,7 @@ function MapComponent() {
       : currentLocation;
 
   // =========================================================
-  // MAIN UI
+  //                  MAIN UI
   // =========================================================
 
   return (
@@ -288,13 +319,19 @@ function MapComponent() {
         }}
       >
 
+        {/* MAP TILES */}
+
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
+        {/* RECENTER */}
+
         <RecenterMap
           location={mapCenter}
         />
+
+        {/* CLICK LOCATION */}
 
         <LocationMarker
           setLat={setLat}
@@ -364,8 +401,13 @@ function MapComponent() {
                 </p>
 
                 <p>
-                  <strong>Budget:</strong>
+                  <strong>Budget Allocated:</strong>
                   ₹{c.allocated_budget}
+                </p>
+
+                <p>
+                  <strong>Budget Spent:</strong>
+                  ₹{c.spent_budget}
                 </p>
 
                 <p>
@@ -400,7 +442,6 @@ function MapComponent() {
       </MapContainer>
 
     </div>
-
   );
 }
 

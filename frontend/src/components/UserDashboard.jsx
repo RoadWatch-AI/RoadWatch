@@ -6,7 +6,14 @@ function UserDashboard() {
 
   return (
 
-    <div className="dashboard">
+    <div
+      className="dashboard"
+      style={{
+        overflowY: "auto",
+        minHeight: "100vh",
+        paddingBottom: "80px",
+      }}
+    >
 
       {/* NAVBAR */}
 
@@ -20,7 +27,7 @@ function UserDashboard() {
 
       </div>
 
-      {/* HERO SECTION */}
+      {/* HERO */}
 
       <div className="hero">
 
@@ -34,7 +41,7 @@ function UserDashboard() {
 
       </div>
 
-      {/* STATS SECTION */}
+      {/* STATS */}
 
       <div className="stats-grid">
 
@@ -84,14 +91,13 @@ function UserDashboard() {
         </button>
 
         <button
-        className="action-btn secondary"
-        onClick={() => navigate("/complaints")}
->
-        My Complaints
-         </button>
+          className="action-btn secondary"
+          onClick={() => navigate("/complaints")}
+        >
+          My Complaints
+        </button>
 
       </div>
-      
 
       {/* RECENT COMPLAINTS */}
 
@@ -99,105 +105,114 @@ function UserDashboard() {
 
         <h2>My Recent Complaints</h2>
 
-        <table>
+        <div
+          style={{
+            overflowX: "auto",
+          }}
+        >
 
-          <thead>
+          <table>
 
-            <tr>
+            <thead>
 
-              <th>Issue</th>
+              <tr>
 
-              <th>Road</th>
+                <th>Issue</th>
 
-              <th>Severity</th>
+                <th>Road</th>
 
-              <th>Status</th>
+                <th>Severity</th>
 
-            </tr>
+                <th>Status</th>
 
-          </thead>
+              </tr>
 
-          <tbody>
+            </thead>
 
-            <tr>
+            <tbody>
 
-              <td>Pothole</td>
+              <tr>
 
-              <td>OMR Road</td>
+                <td>Pothole</td>
 
-              <td>
+                <td>OMR Road</td>
 
-                <span className="severity high">
-                  HIGH
-                </span>
+                <td>
 
-              </td>
+                  <span className="severity high">
+                    HIGH
+                  </span>
 
-              <td>
+                </td>
 
-                <span className="status active-status">
-                  ACTIVE
-                </span>
+                <td>
 
-              </td>
+                  <span className="status active-status">
+                    ACTIVE
+                  </span>
 
-            </tr>
+                </td>
 
-            <tr>
+              </tr>
 
-              <td>Road Crack</td>
+              <tr>
 
-              <td>Sardar Patel Road</td>
+                <td>Road Crack</td>
 
-              <td>
+                <td>Sardar Patel Road</td>
 
-                <span className="severity medium">
-                  MEDIUM
-                </span>
+                <td>
 
-              </td>
+                  <span className="severity medium">
+                    MEDIUM
+                  </span>
 
-              <td>
+                </td>
 
-                <span className="status progress-status">
-                  IN_PROGRESS
-                </span>
+                <td>
 
-              </td>
+                  <span className="status progress-status">
+                    IN_PROGRESS
+                  </span>
 
-            </tr>
+                </td>
 
-            <tr>
+              </tr>
 
-              <td>Pothole</td>
+              <tr>
 
-              <td>ECR Road</td>
+                <td>Pothole</td>
 
-              <td>
+                <td>ECR Road</td>
 
-                <span className="severity low">
-                  LOW
-                </span>
+                <td>
 
-              </td>
+                  <span className="severity low">
+                    LOW
+                  </span>
 
-              <td>
+                </td>
 
-                <span className="status resolved-status">
-                  RESOLVED
-                </span>
+                <td>
 
-              </td>
+                  <span className="status resolved-status">
+                    RESOLVED
+                  </span>
 
-            </tr>
+                </td>
 
-          </tbody>
+              </tr>
 
-        </table>
+            </tbody>
+
+          </table>
+
+        </div>
 
       </div>
 
     </div>
+
   );
 }
 
