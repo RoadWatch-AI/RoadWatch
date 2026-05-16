@@ -4,6 +4,12 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from ultralytics import YOLO
 import os
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token
+)
+
+import bcrypt
 
 app = Flask(__name__)
 CORS(app)
@@ -26,6 +32,9 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:sql%40123@localhost/roadwatch'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["JWT_SECRET_KEY"] = "roadwatch_secret_key"
+
+jwt = JWTManager(app)
 
 db = SQLAlchemy(app)
 
@@ -277,6 +286,143 @@ def uploaded_file(filename):
         app.config['UPLOAD_FOLDER'],
         filename
     )
+
+# =========================================================
+#                    AUTH APIs
+# =========================================================
+
+@app.route("/signup", methods=["POST"])
+def signup():
+
+    data = request.json
+
+    name = data.get("name")
+
+    email = data.get("email")
+
+    phone = data.get("phone")
+
+    password = data.get("password")
+
+    # ---------------- CHECK EXISTING USER ----------------
+
+    existing_user = User.query.filter_by(
+        email=email
+    ).first()
+
+    if existing_user:
+
+        return jsonify({
+
+            "message": "Email already exists"
+
+        }), 400
+
+    # ---------------- HASH PASSWORD ----------------
+
+    hashed_password = bcrypt.hashpw(
+
+        password.encode("utf-8"),
+
+        bcrypt.gensalt()
+
+    ).decode("utf-8")
+
+    # ---------------- CREATE USER ----------------
+
+    new_user = User(
+
+        name=name,
+
+        email=email,
+
+        phone=phone,
+
+        password=hashed_password,
+
+        role="USER"
+
+    )
+
+    db.session.add(new_user)
+
+    db.session.commit()
+
+    return jsonify({
+
+        "message": "Signup successful"
+
+    }), 201
+
+
+@app.route("/login", methods=["POST"])
+def login():
+
+    data = request.json
+
+    email = data.get("email")
+
+    password = data.get("password")
+
+    # ---------------- FIND USER ----------------
+
+    user = User.query.filter_by(
+        email=email
+    ).first()
+
+    if not user:
+
+        return jsonify({
+
+            "message": "Invalid email"
+
+        }), 401
+
+    # ---------------- VERIFY PASSWORD ----------------
+
+    password_correct = bcrypt.checkpw(
+
+        password.encode("utf-8"),
+
+        user.password.encode("utf-8")
+
+    )
+
+    if not password_correct:
+
+        return jsonify({
+
+            "message": "Invalid password"
+
+        }), 401
+
+    # ---------------- CREATE JWT TOKEN ----------------
+
+    access_token = create_access_token(
+
+        identity={
+
+            "id": user.id,
+
+            "email": user.email,
+
+            "role": user.role
+
+        }
+
+    )
+
+    return jsonify({
+
+        "message": "Login successful",
+
+        "token": access_token,
+
+        "role": user.role,
+
+        "name": user.name
+
+    }), 200
 
 # =========================================================
 #                    COMPLAINT APIs

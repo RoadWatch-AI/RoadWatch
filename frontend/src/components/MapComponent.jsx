@@ -64,7 +64,6 @@ const currentDotIcon = L.divIcon({
       height: 18px;
     ">
 
-      <!-- Pulsing Ring -->
       <div style="
         position:absolute;
         width:18px;
@@ -75,7 +74,6 @@ const currentDotIcon = L.divIcon({
         animation:pulse 1.2s infinite;
       "></div>
 
-      <!-- Main Blue Dot -->
       <div style="
         position:absolute;
         width:18px;
@@ -93,9 +91,8 @@ const currentDotIcon = L.divIcon({
             opacity: 0.5;
           }
           85% {
-              transform: scale(4);
-              opacity: 0.15;
-}
+            transform: scale(4);
+            opacity: 0.15;
           }
           100% {
             transform: scale(4.2);
@@ -143,9 +140,6 @@ function LocationMarker({ setLat, setLon }) {
       const latitude = e.latlng.lat;
       const longitude = e.latlng.lng;
 
-      console.log("Latitude:", latitude);
-      console.log("Longitude:", longitude);
-
       setLat(latitude);
       setLon(longitude);
 
@@ -162,6 +156,22 @@ function LocationMarker({ setLat, setLon }) {
 
 function MapComponent() {
 
+  // =========================================================
+  // LOGOUT
+  // =========================================================
+
+  const handleLogout = () => {
+
+    localStorage.removeItem("token");
+
+    localStorage.removeItem("role");
+
+    localStorage.removeItem("name");
+
+    window.location.reload();
+
+  };
+
   // Selected complaint coordinates
   const [lat, setLat] = useState(null);
   const [lon, setLon] = useState(null);
@@ -173,7 +183,7 @@ function MapComponent() {
   const [complaints, setComplaints] = useState([]);
 
   // =========================================================
-  //              GET CURRENT USER LOCATION
+  // GET CURRENT USER LOCATION
   // =========================================================
 
   useEffect(() => {
@@ -202,7 +212,7 @@ function MapComponent() {
   }, []);
 
   // =========================================================
-  //              FETCH COMPLAINTS FROM BACKEND
+  // FETCH COMPLAINTS
   // =========================================================
 
   const fetchComplaints = () => {
@@ -240,7 +250,7 @@ function MapComponent() {
   }, []);
 
   // =========================================================
-  //                    LOADING SCREEN
+  // LOADING SCREEN
   // =========================================================
 
   if (!currentLocation) {
@@ -265,7 +275,7 @@ function MapComponent() {
   }
 
   // =========================================================
-  //                    MAIN UI
+  // MAIN UI
   // =========================================================
 
   return (
@@ -278,12 +288,38 @@ function MapComponent() {
       }}
     >
 
+      {/* LOGOUT BUTTON */}
+
+      <button
+        onClick={handleLogout}
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          zIndex: 2000,
+          padding: "12px 18px",
+          border: "none",
+          borderRadius: "12px",
+          background: "#ef4444",
+          color: "white",
+          fontWeight: "bold",
+          cursor: "pointer",
+          boxShadow: "0 6px 16px rgba(0,0,0,0.2)"
+        }}
+      >
+        Logout
+      </button>
+
       {/* Complaint Form */}
+
       {lat && lon && (
+
         <ComplaintForm
           lat={lat}
           lon={lon}
-   refreshComplaints={fetchComplaints}/>
+          refreshComplaints={fetchComplaints}
+        />
+
       )}
 
       <MapContainer
@@ -295,25 +331,17 @@ function MapComponent() {
         }}
       >
 
-        {/* OpenStreetMap Tiles */}
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* Recenter Map */}
         <RecenterMap location={currentLocation} />
 
-        {/* Capture Click Coordinates */}
         <LocationMarker
           setLat={setLat}
           setLon={setLon}
         />
 
-        {/* =========================================================
-                    CURRENT USER LOCATION
-        ========================================================= */}
-
-        {/* Accuracy Circle */}
         <Circle
           center={currentLocation}
           radius={120}
@@ -325,7 +353,6 @@ function MapComponent() {
           }}
         />
 
-        {/* Blue Live Dot */}
         <Marker
           position={currentLocation}
           icon={currentDotIcon}
@@ -336,10 +363,6 @@ function MapComponent() {
           </Popup>
 
         </Marker>
-
-        {/* =========================================================
-                    COMPLAINT MARKERS
-        ========================================================= */}
 
         {complaints.map((c) => (
 
