@@ -29,34 +29,45 @@ function UserDashboard() {
         </h2>
 
         <p>
-          Monitor and report road
-          infrastructure issues in real time.
+          Monitor and report road infrastructure issues in real time.
         </p>
 
       </div>
 
-      {/* STATS */}
+      {/* STATS SECTION */}
 
       <div className="stats-grid">
 
         <div className="card">
+
           <h3>12</h3>
+
           <p>Complaints Submitted</p>
+
         </div>
 
         <div className="card active">
+
           <h3>5</h3>
+
           <p>Active Complaints</p>
+
         </div>
 
         <div className="card progress">
+
           <h3>3</h3>
+
           <p>In Progress</p>
+
         </div>
 
         <div className="card resolved">
+
           <h3>4</h3>
-          <p>Resolved</p>
+
+          <p>Resolved Complaints</p>
+
         </div>
 
       </div>
@@ -73,29 +84,35 @@ function UserDashboard() {
         </button>
 
         <button
-          className="action-btn secondary"
-          onClick={() => navigate("/map")}
-        >
-          Open Monitoring Map
-        </button>
+        className="action-btn secondary"
+        onClick={() => navigate("/complaints")}
+>
+        My Complaints
+         </button>
 
       </div>
+      
 
       {/* RECENT COMPLAINTS */}
 
       <div className="table-section">
 
-        <h2>Recent Complaints</h2>
+        <h2>My Recent Complaints</h2>
 
         <table>
 
           <thead>
 
             <tr>
+
               <th>Issue</th>
+
               <th>Road</th>
+
               <th>Severity</th>
+
               <th>Status</th>
+
             </tr>
 
           </thead>
@@ -109,15 +126,19 @@ function UserDashboard() {
               <td>OMR Road</td>
 
               <td>
+
                 <span className="severity high">
                   HIGH
                 </span>
+
               </td>
 
               <td>
+
                 <span className="status active-status">
                   ACTIVE
                 </span>
+
               </td>
 
             </tr>
@@ -129,15 +150,19 @@ function UserDashboard() {
               <td>Sardar Patel Road</td>
 
               <td>
+
                 <span className="severity medium">
                   MEDIUM
                 </span>
+
               </td>
 
               <td>
+
                 <span className="status progress-status">
                   IN_PROGRESS
                 </span>
+
               </td>
 
             </tr>
@@ -149,15 +174,19 @@ function UserDashboard() {
               <td>ECR Road</td>
 
               <td>
+
                 <span className="severity low">
                   LOW
                 </span>
+
               </td>
 
               <td>
+
                 <span className="status resolved-status">
                   RESOLVED
                 </span>
+
               </td>
 
             </tr>

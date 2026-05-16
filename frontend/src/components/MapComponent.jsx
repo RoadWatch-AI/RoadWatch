@@ -10,7 +10,10 @@ import {
 
 import { useState, useEffect } from "react";
 
+import { useLocation } from "react-router-dom";
+
 import L from "leaflet";
+
 import "leaflet/dist/leaflet.css";
 
 import ComplaintForm from "./ComplaintForm";
@@ -50,7 +53,7 @@ const lowIcon = new L.Icon({
 });
 
 // =========================================================
-//              GOOGLE MAPS STYLE LIVE DOT
+//              LIVE CURRENT LOCATION DOT
 // =========================================================
 
 const currentDotIcon = L.divIcon({
@@ -64,7 +67,6 @@ const currentDotIcon = L.divIcon({
       height: 18px;
     ">
 
-      <!-- Pulsing Ring -->
       <div style="
         position:absolute;
         width:18px;
@@ -75,7 +77,6 @@ const currentDotIcon = L.divIcon({
         animation:pulse 1.2s infinite;
       "></div>
 
-      <!-- Main Blue Dot -->
       <div style="
         position:absolute;
         width:18px;
@@ -92,13 +93,9 @@ const currentDotIcon = L.divIcon({
             transform: scale(1);
             opacity: 0.5;
           }
-          85% {
-              transform: scale(4);
-              opacity: 0.15;
-}
-          }
+
           100% {
-            transform: scale(4.2);
+            transform: scale(4);
             opacity: 0;
           }
         }
@@ -123,7 +120,7 @@ function RecenterMap({ location }) {
 
   useEffect(() => {
 
-    map.setView(location, 15);
+    map.setView(location, 16);
 
   }, [location, map]);
 
@@ -131,7 +128,7 @@ function RecenterMap({ location }) {
 }
 
 // =========================================================
-//              CAPTURE CLICKED LOCATION
+//              CAPTURE MAP CLICK
 // =========================================================
 
 function LocationMarker({ setLat, setLon }) {
@@ -140,14 +137,9 @@ function LocationMarker({ setLat, setLon }) {
 
     click(e) {
 
-      const latitude = e.latlng.lat;
-      const longitude = e.latlng.lng;
+      setLat(e.latlng.lat);
 
-      console.log("Latitude:", latitude);
-      console.log("Longitude:", longitude);
-
-      setLat(latitude);
-      setLon(longitude);
+      setLon(e.latlng.lng);
 
     },
 
@@ -157,23 +149,39 @@ function LocationMarker({ setLat, setLon }) {
 }
 
 // =========================================================
-//                    MAIN COMPONENT
+//                  MAIN COMPONENT
 // =========================================================
 
 function MapComponent() {
 
   // Selected complaint coordinates
   const [lat, setLat] = useState(null);
+
   const [lon, setLon] = useState(null);
 
-  // Current user location
-  const [currentLocation, setCurrentLocation] = useState(null);
+  // User current location
+  const [currentLocation, setCurrentLocation] =
+    useState(null);
 
-  // Complaints from backend
-  const [complaints, setComplaints] = useState([]);
+  // Backend complaints
+  const [complaints, setComplaints] =
+    useState([]);
 
   // =========================================================
-  //              GET CURRENT USER LOCATION
+  //              ROUTE PARAMS
+  // =========================================================
+
+  const location = useLocation();
+
+  const params =
+    new URLSearchParams(location.search);
+
+  const focusedLat = params.get("lat");
+
+  const focusedLon = params.get("lon");
+
+  // =========================================================
+  //              GET CURRENT LOCATION
   // =========================================================
 
   useEffect(() => {
@@ -189,9 +197,7 @@ function MapComponent() {
 
       },
 
-      (error) => {
-
-        console.log(error);
+      () => {
 
         alert("Location access denied");
 
@@ -202,21 +208,20 @@ function MapComponent() {
   }, []);
 
   // =========================================================
-  //              FETCH COMPLAINTS FROM BACKEND
+  //              FETCH COMPLAINTS
   // =========================================================
 
   const fetchComplaints = () => {
 
     fetch("http://127.0.0.1:5000/complaints")
+
       .then((res) => res.json())
+
       .then((data) => {
 
         const formatted = data.map((c) => ({
 
           ...c,
-
-          lat: c.lat,
-          lon: c.lon,
 
           icon:
             c.severity === "HIGH"
@@ -240,7 +245,7 @@ function MapComponent() {
   }, []);
 
   // =========================================================
-  //                    LOADING SCREEN
+  //                  LOADING SCREEN
   // =========================================================
 
   if (!currentLocation) {
@@ -265,7 +270,22 @@ function MapComponent() {
   }
 
   // =========================================================
-  //                    MAIN UI
+  //                  MAP CENTER
+  // =========================================================
+
+  const mapCenter =
+
+    focusedLat && focusedLon
+
+      ? [
+          parseFloat(focusedLat),
+          parseFloat(focusedLon),
+        ]
+
+      : currentLocation;
+
+  // =========================================================
+  //                  MAIN UI
   // =========================================================
 
   return (
@@ -278,42 +298,48 @@ function MapComponent() {
       }}
     >
 
-      {/* Complaint Form */}
+      {/* COMPLAINT FORM */}
+
       {lat && lon && (
+
         <ComplaintForm
           lat={lat}
           lon={lon}
-   refreshComplaints={fetchComplaints}/>
+          refreshComplaints={fetchComplaints}
+        />
+
       )}
 
       <MapContainer
-        center={currentLocation}
-        zoom={15}
+        center={mapCenter}
+        zoom={16}
         style={{
           height: "100%",
           width: "100%",
         }}
       >
 
-        {/* OpenStreetMap Tiles */}
+        {/* MAP TILES */}
+
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* Recenter Map */}
-        <RecenterMap location={currentLocation} />
+        {/* RECENTER */}
 
-        {/* Capture Click Coordinates */}
+        <RecenterMap
+          location={mapCenter}
+        />
+
+        {/* CLICK LOCATION */}
+
         <LocationMarker
           setLat={setLat}
           setLon={setLon}
         />
 
-        {/* =========================================================
-                    CURRENT USER LOCATION
-        ========================================================= */}
+        {/* CURRENT LOCATION */}
 
-        {/* Accuracy Circle */}
         <Circle
           center={currentLocation}
           radius={120}
@@ -325,7 +351,6 @@ function MapComponent() {
           }}
         />
 
-        {/* Blue Live Dot */}
         <Marker
           position={currentLocation}
           icon={currentDotIcon}
@@ -337,9 +362,7 @@ function MapComponent() {
 
         </Marker>
 
-        {/* =========================================================
-                    COMPLAINT MARKERS
-        ========================================================= */}
+        {/* COMPLAINT MARKERS */}
 
         {complaints.map((c) => (
 
@@ -395,14 +418,14 @@ function MapComponent() {
                 {c.image_url && (
 
                   <img
-                    src={`http://127.0.0.1:5000/${c.image_url}`}
+                    src={c.image_url}
                     alt="Road Issue"
                     style={{
                       width: "100%",
-                      height: "140px",
+                      height: "150px",
                       objectFit: "cover",
                       borderRadius: "10px",
-                      marginTop: "10px"
+                      marginTop: "10px",
                     }}
                   />
 
