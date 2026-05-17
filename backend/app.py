@@ -6,7 +6,9 @@ from ultralytics import YOLO
 import os
 from flask_jwt_extended import (
     JWTManager,
-    create_access_token
+    create_access_token,
+    jwt_required,
+    get_jwt_identity
 )
 
 import bcrypt
@@ -32,7 +34,7 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:sql%40123@localhost/roadwatch'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config["JWT_SECRET_KEY"] = "roadwatch_secret_key"
+app.config["JWT_SECRET_KEY"] = "roadwatch_super_secure_jwt_secret_2026"
 
 jwt = JWTManager(app)
 
@@ -209,6 +211,11 @@ class Complaint(db.Model):
     project_id = db.Column(
         db.Integer,
         db.ForeignKey('road_project.id')
+    )
+
+    user_id = db.Column(
+    db.Integer,
+    db.ForeignKey('user.id')
     )
 
     created_at = db.Column(
@@ -399,17 +406,7 @@ def login():
     # ---------------- CREATE JWT TOKEN ----------------
 
     access_token = create_access_token(
-
-        identity={
-
-            "id": user.id,
-
-            "email": user.email,
-
-            "role": user.role
-
-        }
-
+    identity=str(user.id)
     )
 
     return jsonify({
@@ -429,7 +426,10 @@ def login():
 # =========================================================
 
 @app.route("/complaints", methods=["POST"])
+@jwt_required()
 def create_complaint():
+
+    user_id = int(get_jwt_identity())
 
     lat = request.form.get("lat")
 
@@ -566,6 +566,7 @@ def create_complaint():
 
     new_complaint = Complaint(
 
+
         lat=lat,
 
         lon=lon,
@@ -588,7 +589,9 @@ def create_complaint():
 
         contractor_id=contractor_id,
 
-        project_id=project_id
+        project_id=project_id,
+
+        user_id=user_id
 
     )
 
@@ -721,6 +724,55 @@ def get_complaints():
         })
 
     return jsonify(output)
+
+# =========================================================
+#                 MY COMPLAINTS
+# =========================================================
+
+@app.route("/my-complaints", methods=["GET"])
+@jwt_required()
+def get_my_complaints():
+
+    user_id = int(get_jwt_identity())
+
+    complaints = Complaint.query.filter_by(
+        user_id=user_id
+    ).all()
+
+    output = []
+
+    for complaint in complaints:
+
+        output.append({
+
+            "id": complaint.id,
+
+            "lat": complaint.lat,
+
+            "lon": complaint.lon,
+
+            "road_name": complaint.road_name,
+
+            "road_type": complaint.road_type,
+
+            "area": complaint.area,
+
+            "description": complaint.description,
+
+            "image_url": complaint.image_url,
+
+            "issue": complaint.issue,
+
+            "severity": complaint.severity,
+
+            "status": complaint.status,
+
+            "created_at": complaint.created_at
+
+        })
+
+    return jsonify(output)
+
 # =========================================================
 #                    ROAD PROJECT APIs
 # =========================================================
