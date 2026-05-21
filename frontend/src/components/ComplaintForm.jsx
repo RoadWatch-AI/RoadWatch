@@ -125,15 +125,19 @@ function ComplaintForm({
       // =========================================================
 
       const backendResponse = await fetch(
-        "http://127.0.0.1:5000/complaints",
-        {
+  "http://127.0.0.1:5000/complaints",
+  {
 
-          method: "POST",
+    method: "POST",
 
-          body: formData,
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`
+    },
 
-        }
-      );
+    body: formData,
+
+  }
+);
 
       const data = await backendResponse.json();
 

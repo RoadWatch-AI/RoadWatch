@@ -418,7 +418,7 @@ function MapComponent() {
                 {c.image_url && (
 
                   <img
-                    src={c.image_url}
+                     src={`http://127.0.0.1:5000/${c.image_url}`}
                     alt="Road Issue"
                     style={{
                       width: "100%",

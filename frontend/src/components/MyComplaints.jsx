@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { useNavigate } from "react-router-dom";
 
@@ -14,36 +14,45 @@ function MyComplaints() {
   const [severityFilter, setSeverityFilter] =
     useState("");
 
-  const complaints = [
+  const [complaints, setComplaints] =
+  useState([]);
+
+  useEffect(() => {
+
+  const token =
+    localStorage.getItem("token");
+
+  fetch(
+
+    "http://127.0.0.1:5000/my-complaints",
 
     {
-      issue: "Pothole",
-      road: "OMR Road",
-      severity: "HIGH",
-      status: "ACTIVE",
-      lat: 12.9915,
-      lon: 80.2337,
-    },
 
-    {
-      issue: "Road Crack",
-      road: "Sardar Patel Road",
-      severity: "MEDIUM",
-      status: "IN_PROGRESS",
-      lat: 13.0109,
-      lon: 80.2353,
-    },
+      headers: {
 
-    {
-      issue: "Pothole",
-      road: "ECR Road",
-      severity: "LOW",
-      status: "RESOLVED",
-      lat: 12.9270,
-      lon: 80.2500,
-    },
+        Authorization: `Bearer ${token}`
 
-  ];
+      }
+
+    }
+
+  )
+
+    .then((res) => res.json())
+
+    .then((data) => {
+
+      setComplaints(data);
+
+    })
+
+    .catch((err) => {
+
+      console.log(err);
+
+    });
+
+}, []);
 
   const filteredComplaints =
     complaints.filter((c) => {
@@ -54,7 +63,7 @@ function MyComplaints() {
           search.toLowerCase()
         ) ||
 
-        c.road.toLowerCase().includes(
+        c.road_name.toLowerCase().includes(
           search.toLowerCase()
         ) ||
 
@@ -210,7 +219,7 @@ function MyComplaints() {
 
                   <td>{c.issue}</td>
 
-                  <td>{c.road}</td>
+                  <td>{c.road_name}</td>
 
                   <td>
 

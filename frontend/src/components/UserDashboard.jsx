@@ -1,8 +1,96 @@
 import { useNavigate } from "react-router-dom";
 
+import { useEffect, useState } from "react";
+
 function UserDashboard() {
 
   const navigate = useNavigate();
+
+  // =========================================================
+  // STATE
+  // =========================================================
+
+  const [complaints, setComplaints] =
+    useState([]);
+
+  // =========================================================
+  // FETCH REAL USER COMPLAINTS
+  // =========================================================
+
+  useEffect(() => {
+
+    const token =
+      localStorage.getItem("token");
+
+    fetch(
+
+      "http://127.0.0.1:5000/my-complaints",
+
+      {
+
+        headers: {
+
+          Authorization: `Bearer ${token}`
+
+        }
+
+      }
+
+    )
+
+      .then((res) => res.json())
+
+      .then((data) => {
+
+        setComplaints(data);
+
+      })
+
+      .catch((err) => {
+
+        console.log(err);
+
+      });
+
+  }, []);
+
+  // =========================================================
+  // LOGOUT
+  // =========================================================
+
+  const handleLogout = () => {
+
+    localStorage.clear();
+
+    window.location.reload();
+
+  };
+
+  // =========================================================
+  // STATS
+  // =========================================================
+
+  const totalComplaints =
+    complaints.length;
+
+  const activeComplaints =
+    complaints.filter(
+      (c) => c.status === "ACTIVE"
+    ).length;
+
+  const progressComplaints =
+    complaints.filter(
+      (c) => c.status === "IN_PROGRESS"
+    ).length;
+
+  const resolvedComplaints =
+    complaints.filter(
+      (c) => c.status === "RESOLVED"
+    ).length;
+
+  // =========================================================
+  // UI
+  // =========================================================
 
   return (
 
@@ -21,7 +109,10 @@ function UserDashboard() {
 
         <h1>RoadWatch</h1>
 
-        <button className="logout-btn">
+        <button
+          className="logout-btn"
+          onClick={handleLogout}
+        >
           Logout
         </button>
 
@@ -47,7 +138,7 @@ function UserDashboard() {
 
         <div className="card">
 
-          <h3>12</h3>
+          <h3>{totalComplaints}</h3>
 
           <p>Complaints Submitted</p>
 
@@ -55,7 +146,7 @@ function UserDashboard() {
 
         <div className="card active">
 
-          <h3>5</h3>
+          <h3>{activeComplaints}</h3>
 
           <p>Active Complaints</p>
 
@@ -63,7 +154,7 @@ function UserDashboard() {
 
         <div className="card progress">
 
-          <h3>3</h3>
+          <h3>{progressComplaints}</h3>
 
           <p>In Progress</p>
 
@@ -71,7 +162,7 @@ function UserDashboard() {
 
         <div className="card resolved">
 
-          <h3>4</h3>
+          <h3>{resolvedComplaints}</h3>
 
           <p>Resolved Complaints</p>
 
@@ -131,77 +222,63 @@ function UserDashboard() {
 
             <tbody>
 
-              <tr>
+              {complaints.length > 0 ? (
 
-                <td>Pothole</td>
+                complaints.map((c, index) => (
 
-                <td>OMR Road</td>
+                  <tr key={index}>
 
-                <td>
+                    <td>{c.issue}</td>
 
-                  <span className="severity high">
-                    HIGH
-                  </span>
+                    <td>{c.road_name}</td>
 
-                </td>
+                    <td>
 
-                <td>
+                      <span
+                        className={`severity ${c.severity?.toLowerCase()}`}
+                      >
+                        {c.severity}
+                      </span>
 
-                  <span className="status active-status">
-                    ACTIVE
-                  </span>
+                    </td>
 
-                </td>
+                    <td>
 
-              </tr>
+                      <span
+                        className={`status ${
+                          c.status === "ACTIVE"
+                            ? "active-status"
+                            : c.status === "IN_PROGRESS"
+                            ? "progress-status"
+                            : "resolved-status"
+                        }`}
+                      >
+                        {c.status}
+                      </span>
 
-              <tr>
+                    </td>
 
-                <td>Road Crack</td>
+                  </tr>
 
-                <td>Sardar Patel Road</td>
+                ))
 
-                <td>
+              ) : (
 
-                  <span className="severity medium">
-                    MEDIUM
-                  </span>
+                <tr>
 
-                </td>
+                  <td
+                    colSpan="4"
+                    style={{
+                      textAlign: "center",
+                      padding: "30px",
+                    }}
+                  >
+                    No complaints yet 🚀
+                  </td>
 
-                <td>
+                </tr>
 
-                  <span className="status progress-status">
-                    IN_PROGRESS
-                  </span>
-
-                </td>
-
-              </tr>
-
-              <tr>
-
-                <td>Pothole</td>
-
-                <td>ECR Road</td>
-
-                <td>
-
-                  <span className="severity low">
-                    LOW
-                  </span>
-
-                </td>
-
-                <td>
-
-                  <span className="status resolved-status">
-                    RESOLVED
-                  </span>
-
-                </td>
-
-              </tr>
+              )}
 
             </tbody>
 
