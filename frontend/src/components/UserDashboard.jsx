@@ -216,6 +216,8 @@ function UserDashboard() {
 
                 <th>Status</th>
 
+                <th>AI Alerts</th>
+
               </tr>
 
             </thead>
@@ -258,6 +260,68 @@ function UserDashboard() {
 
                     </td>
 
+                   <td>
+
+  {
+    c.anomalies &&
+    c.anomalies.length > 0 ? (
+
+      <details
+        className="insight-dropdown"
+      >
+
+        <summary
+          className="insight-btn"
+        >
+
+          View Insights
+
+        </summary>
+
+        <div
+          className="insight-box"
+        >
+
+          {
+
+            c.anomalies.map(
+              (alert, index) => (
+
+                <div
+                  key={index}
+                  className="anomaly-alert"
+                >
+
+                  ⚠️ {alert}
+
+                </div>
+
+              )
+            )
+
+          }
+
+        </div>
+
+      </details>
+
+    ) : (
+
+      <span
+        style={{
+          color: "#64748b",
+          fontWeight: "500",
+        }}
+      >
+
+        No Alerts
+
+      </span>
+
+    )
+  }
+
+</td>
                   </tr>
 
                 ))
@@ -267,7 +331,7 @@ function UserDashboard() {
                 <tr>
 
                   <td
-                    colSpan="4"
+                    colSpan="5"
                     style={{
                       textAlign: "center",
                       padding: "30px",

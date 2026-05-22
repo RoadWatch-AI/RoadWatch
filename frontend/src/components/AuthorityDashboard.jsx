@@ -421,6 +421,10 @@ fetch(
                 Date
               </th>
 
+              <th style={thStyle}>
+                  AI Insights
+              </th>
+
             </tr>
 
           </thead>
@@ -536,6 +540,68 @@ fetch(
 
                     </td>
 
+                    <td style={tdStyle}>
+
+  {
+    c.anomalies?.length > 0 ? (
+
+      <details>
+
+        <summary
+          style={insightBtn}
+        >
+
+          View Insights
+
+        </summary>
+
+        <div
+          style={{
+            marginTop: "10px",
+          }}
+        >
+
+          {
+
+            c.anomalies.map(
+              (alert, index) => (
+
+                <div
+                  key={index}
+                  style={anomalyStyle}
+                >
+
+                  ⚠️ {alert}
+
+                </div>
+
+              )
+            )
+
+          }
+
+        </div>
+
+      </details>
+
+    ) : (
+
+      <span
+        style={{
+          color: "#64748b",
+          fontWeight: "500",
+        }}
+      >
+
+        No Alerts
+
+      </span>
+
+    )
+  }
+
+</td>
+
                   </tr>
 
                 )
@@ -548,7 +614,7 @@ fetch(
                 <tr>
 
                   <td
-                    colSpan="6"
+                    colSpan="7"
                     style={{
                       ...tdStyle,
                       textAlign:
@@ -702,4 +768,46 @@ const badgeStyle = {
   color: "white",
   fontWeight: "bold",
   fontSize: "14px",
+};
+
+const insightBtn = {
+
+  background: "#1e3a8a",
+
+  color: "white",
+
+  padding: "8px 14px",
+
+  borderRadius: "10px",
+
+  cursor: "pointer",
+
+  fontSize: "13px",
+
+  fontWeight: "600",
+
+  width: "fit-content",
+
+  userSelect: "none",
+};
+
+const anomalyStyle = {
+
+  background: "#fff7ed",
+
+  color: "#c2410c",
+
+  border: "1px solid #fdba74",
+
+  padding: "8px 12px",
+
+  borderRadius: "10px",
+
+  fontSize: "12px",
+
+  fontWeight: "600",
+
+  marginBottom: "6px",
+
+  width: "fit-content",
 };

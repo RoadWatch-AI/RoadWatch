@@ -563,3 +563,67 @@ tbody tr:hover {
   }
 
 }
+
+/* =========================================
+   INSIGHT BUTTON
+========================================= */
+
+.insight-btn {
+
+  background: #1e3a8a;
+
+  color: white;
+
+  padding: 8px 14px;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  width: fit-content;
+
+  list-style: none;
+
+  user-select: none;
+}
+
+/* REMOVE DEFAULT ARROW */
+
+.insight-dropdown summary::-webkit-details-marker {
+
+  display: none;
+}
+
+.insight-box {
+
+  margin-top: 10px;
+}
+
+/* =========================================
+   ANOMALY ALERT
+========================================= */
+
+.anomaly-alert {
+
+  background: #fff7ed;
+
+  color: #c2410c;
+
+  border: 1px solid #fdba74;
+
+  padding: 8px 12px;
+
+  border-radius: 10px;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  margin-bottom: 6px;
+
+  width: fit-content;
+}
