@@ -2,7 +2,10 @@ import { useState } from "react";
 
 import "./login.css";
 
-function Login({ setIsLoggedIn }) {
+function Login({
+  setIsLoggedIn,
+  setRole
+}) {
 
   const [isSignup, setIsSignup] = useState(false);
 
@@ -94,6 +97,7 @@ function Login({ setIsLoggedIn }) {
         alert("Login Successful 🚀");
 
         setIsLoggedIn(true);
+        setRole(result.role);
 
       }
 

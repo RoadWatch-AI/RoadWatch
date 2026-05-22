@@ -774,6 +774,64 @@ def get_my_complaints():
     return jsonify(output)
 
 # =========================================================
+#              AUTHORITY COMPLAINTS API
+# =========================================================
+
+@app.route("/authority/complaints", methods=["GET"])
+@jwt_required()
+def authority_complaints():
+
+    user_id = int(get_jwt_identity())
+
+    authority_user = User.query.get(user_id)
+
+    if not authority_user:
+
+        return jsonify({
+            "message": "Authority not found"
+        }), 404
+
+    # ---------------- MATCH AUTHORITY ----------------
+
+    matched_authority = Authority.query.filter_by(
+        contact_email=authority_user.email
+    ).first()
+
+    if not matched_authority:
+
+        return jsonify([])
+
+    # ---------------- FILTER COMPLAINTS ----------------
+
+    complaints = Complaint.query.filter_by(
+        authority_id=matched_authority.id
+    ).all()
+
+    output = []
+
+    for complaint in complaints:
+
+        output.append({
+
+            "id": complaint.id,
+
+            "road_name": complaint.road_name,
+
+            "issue": complaint.issue,
+
+            "severity": complaint.severity,
+
+            "status": complaint.status,
+
+            "created_at": complaint.created_at,
+
+            "area": complaint.area
+
+        })
+
+    return jsonify(output)
+
+# =========================================================
 #                    ROAD PROJECT APIs
 # =========================================================
 

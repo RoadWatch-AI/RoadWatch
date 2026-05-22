@@ -1,3 +1,5 @@
+import AdminDashboard from "./components/AdminDashboard";
+import AuthorityDashboard from "./components/AuthorityDashboard";
 import {
   BrowserRouter,
   Routes,
@@ -22,6 +24,9 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] =
     useState(false);
 
+  const [role, setRole] =
+  useState("");
+
   // =========================================================
   // CHECK LOGIN TOKEN
   // =========================================================
@@ -33,9 +38,13 @@ function App() {
 
     if (token) {
 
-      setIsLoggedIn(true);
+  setIsLoggedIn(true);
 
-    }
+  setRole(
+    localStorage.getItem("role")
+  );
+
+}
 
   }, []);
 
@@ -48,8 +57,9 @@ function App() {
     return (
 
       <Login
-        setIsLoggedIn={setIsLoggedIn}
-      />
+  setIsLoggedIn={setIsLoggedIn}
+  setRole={setRole}
+/>
 
     );
 
@@ -68,9 +78,29 @@ function App() {
         {/* USER DASHBOARD */}
 
         <Route
-          path="/"
-          element={<UserDashboard />}
-        />
+  path="/"
+  element={
+
+    role === "ADMIN"
+
+    ?
+
+    <AdminDashboard />
+
+    :
+
+    role === "AUTHORITY"
+
+    ?
+
+    <AuthorityDashboard />
+
+    :
+
+    <UserDashboard />
+
+  }
+/>
 
         {/* MAP PAGE */}
 
