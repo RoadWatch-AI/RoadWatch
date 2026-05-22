@@ -4,6 +4,7 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from ultralytics import YOLO
 import os
+from datetime import datetime
 from flask_jwt_extended import (
     JWTManager,
     create_access_token,
@@ -54,6 +55,167 @@ CLASS_MAPPING = {
     3: "Pothole"
 
 }
+
+# =========================================================
+#              SEVERITY PREDICTION ENGINE
+# =========================================================
+
+def predict_severity(
+
+    damage_area,
+    complaints_count,
+    repeated_damage
+
+):
+
+    # ---------------- DAMAGE AREA SCORE ----------------
+
+    if damage_area > 150000:
+
+        severity_value = 3
+
+    elif damage_area > 70000:
+
+        severity_value = 2
+
+    else:
+
+        severity_value = 1
+
+    # ---------------- FINAL SCORE ----------------
+
+    score = (
+
+        complaints_count * 3 +
+
+        repeated_damage * 10 +
+
+        severity_value * 15
+
+    )
+
+    # ---------------- FINAL LABEL ----------------
+
+    if score >= 70:
+
+        return "HIGH"
+
+    elif score >= 40:
+
+        return "MEDIUM"
+
+    else:
+
+        return "LOW"
+    
+# =========================================================
+#              ANOMALY DETECTION ENGINE
+# =========================================================
+
+# =========================================================
+#              ANOMALY DETECTION ENGINE
+# =========================================================
+
+def detect_anomaly(
+
+    complaint,
+    severity,
+    allocated_budget,
+    spent_budget
+
+):
+
+    anomalies = []
+
+    # =====================================================
+    # ROAD-BASED REPEATED DAMAGE DETECTION
+    # =====================================================
+
+    related_complaints = Complaint.query.filter_by(
+        road_name=complaint.road_name
+    ).all()
+
+    complaint_ids = [
+
+        c.id for c in related_complaints
+
+    ]
+
+    latest_repair = RepairHistory.query.filter(
+
+        RepairHistory.complaint_id.in_(
+            complaint_ids
+        )
+
+    ).order_by(
+
+        RepairHistory.repair_date.desc()
+
+    ).first()
+
+    if latest_repair:
+
+        days_since_repair = (
+
+            datetime.utcnow() -
+
+            latest_repair.repair_date
+
+        ).days
+
+        # ROAD DAMAGED AGAIN WITHIN 30 DAYS
+
+        if days_since_repair <= 30:
+
+            anomalies.append(
+                "Repeated Road Damage Detected"
+            )
+
+    # =====================================================
+    # COMPLAINT-BASED REPAIR DELAY
+    # =====================================================
+
+    if complaint.status != "RESOLVED":
+
+        complaint_age = (
+
+            datetime.utcnow() -
+
+            complaint.created_at
+
+        ).days
+
+        if complaint_age >= 10:
+
+            anomalies.append(
+                "Delayed Maintenance Response"
+            )
+
+    # =====================================================
+    # ROAD-BASED BUDGET CONCERN
+    # =====================================================
+
+    road_complaints_count = Complaint.query.filter_by(
+        road_name=complaint.road_name
+    ).count()
+
+    if (
+
+        allocated_budget > 0 and
+
+        spent_budget >= allocated_budget * 0.8 and
+
+        road_complaints_count >= 3 and
+
+        severity == "HIGH"
+
+    ):
+
+        anomalies.append(
+            "Road Still Damaged Despite Recent Maintenance"
+        )
+
+    return anomalies
 
 # =========================================================
 #                    TABLES
@@ -529,28 +691,58 @@ def create_complaint():
 
                     if confidence > highest_conf:
 
-                        highest_conf = confidence
+                       highest_conf = confidence
 
-                        confidence_score = round(confidence, 2)
+                       confidence_score = round(confidence, 2)
 
-                        issue = CLASS_MAPPING.get(
-                            class_id,
-                            "AI Uncertain"
-                        )
+                       issue = CLASS_MAPPING.get(
+                        class_id,
+                        "AI Uncertain"
+           )
 
-            # -------------------- SEVERITY --------------------
+    # =========================================================
+    # DAMAGE AREA CALCULATION
+    # =========================================================
 
-            if highest_conf >= 0.85:
+                       x1, y1, x2, y2 = box.xyxy[0]
 
-                severity = "HIGH"
+                       width = x2 - x1
 
-            elif highest_conf >= 0.65:
+                       height = y2 - y1
 
-                severity = "MEDIUM"
+                       damage_area = width * height
 
-            else:
+    # =========================================================
+    # COMPLAINT HISTORY
+    # =========================================================
 
-                severity = "LOW"
+                       complaints_count = Complaint.query.filter_by(
+                          road_name=road_name
+                       ).count()
+
+    # =========================================================
+    # REPEATED DAMAGE CHECK
+    # =========================================================
+
+                       if complaints_count >= 5:
+
+                          repeated_damage = 1
+
+                       else:
+
+                           repeated_damage = 0
+
+    # =========================================================
+    # HYBRID AI SEVERITY PREDICTION
+    # =========================================================
+
+                       severity = predict_severity(
+
+                              damage_area,
+                              complaints_count,
+                              repeated_damage
+
+                         )
 
         except Exception as e:
 
@@ -669,6 +861,40 @@ def get_complaints():
                 complaint.authority_id
             )
 
+                # =====================================================
+        # BUDGET INFO
+        # =====================================================
+
+        allocated_budget = (
+
+            project.allocated_budget
+            if project else 0
+
+        )
+
+        spent_budget = (
+
+            project.spent_budget
+            if project else 0
+
+        )
+
+        # =====================================================
+        # AI ANOMALY DETECTION
+        # =====================================================
+
+        anomalies = detect_anomaly(
+
+            complaint,
+
+            complaint.severity,
+
+            allocated_budget,
+
+            spent_budget
+
+        )
+        
         output.append({
 
             "id": complaint.id,
@@ -690,6 +916,8 @@ def get_complaints():
             "issue": complaint.issue,
 
             "severity": complaint.severity,
+            
+            "anomalies": anomalies,
 
             "status": complaint.status,
 
@@ -742,7 +970,47 @@ def get_my_complaints():
     output = []
 
     for complaint in complaints:
+                # =====================================================
+        # PROJECT INFO
+        # =====================================================
 
+        project = None
+
+        if complaint.project_id:
+
+            project = RoadProject.query.get(
+                complaint.project_id
+            )
+
+        allocated_budget = (
+
+            project.allocated_budget
+            if project else 0
+
+        )
+
+        spent_budget = (
+
+            project.spent_budget
+            if project else 0
+
+        )
+
+        # =====================================================
+        # AI ANOMALY DETECTION
+        # =====================================================
+
+        anomalies = detect_anomaly(
+
+            complaint,
+
+            complaint.severity,
+
+            allocated_budget,
+
+            spent_budget
+
+        )
         output.append({
 
             "id": complaint.id,
@@ -764,6 +1032,8 @@ def get_my_complaints():
             "issue": complaint.issue,
 
             "severity": complaint.severity,
+            
+             "anomalies": anomalies,
 
             "status": complaint.status,
 
@@ -810,6 +1080,47 @@ def authority_complaints():
     output = []
 
     for complaint in complaints:
+                # =====================================================
+        # PROJECT INFO
+        # =====================================================
+
+        project = None
+
+        if complaint.project_id:
+
+            project = RoadProject.query.get(
+                complaint.project_id
+            )
+
+        allocated_budget = (
+
+            project.allocated_budget
+            if project else 0
+
+        )
+
+        spent_budget = (
+
+            project.spent_budget
+            if project else 0
+
+        )
+
+        # =====================================================
+        # AI ANOMALY DETECTION
+        # =====================================================
+
+        anomalies = detect_anomaly(
+
+            complaint,
+
+            complaint.severity,
+
+            allocated_budget,
+
+            spent_budget
+
+        )
 
         output.append({
 
@@ -820,6 +1131,8 @@ def authority_complaints():
             "issue": complaint.issue,
 
             "severity": complaint.severity,
+            
+            "anomalies": anomalies,
 
             "status": complaint.status,
 
