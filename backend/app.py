@@ -4,7 +4,7 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from ultralytics import YOLO
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_jwt_extended import (
     JWTManager,
     create_access_token,
@@ -36,6 +36,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:sql%40123@localho
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["JWT_SECRET_KEY"] = "roadwatch_super_secure_jwt_secret_2026"
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
 
 jwt = JWTManager(app)
 
@@ -70,11 +71,11 @@ def predict_severity(
 
     # ---------------- DAMAGE AREA SCORE ----------------
 
-    if damage_area > 150000:
+    if damage_area > 30000:
 
         severity_value = 3
 
-    elif damage_area > 70000:
+    elif damage_area > 20000:
 
         severity_value = 2
 
