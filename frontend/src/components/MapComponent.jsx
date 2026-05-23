@@ -8,6 +8,9 @@ import {
   useMap
 } from "react-leaflet";
 
+import { GeoSearchControl, OpenStreetMapProvider } 
+from "leaflet-geosearch";
+
 import { useState, useEffect } from "react";
 
 import { useLocation } from "react-router-dom";
@@ -15,6 +18,7 @@ import { useLocation } from "react-router-dom";
 import L from "leaflet";
 
 import "leaflet/dist/leaflet.css";
+import "leaflet-geosearch/dist/geosearch.css";
 
 import ComplaintForm from "./ComplaintForm";
 
@@ -22,7 +26,6 @@ import ComplaintForm from "./ComplaintForm";
 //                  SEVERITY MARKERS
 // =========================================================
 
-// HIGH Severity - Red Marker
 const highIcon = new L.Icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
@@ -32,7 +35,6 @@ const highIcon = new L.Icon({
   iconAnchor: [12, 41],
 });
 
-// MEDIUM Severity - Orange Marker
 const mediumIcon = new L.Icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png",
@@ -42,7 +44,6 @@ const mediumIcon = new L.Icon({
   iconAnchor: [12, 41],
 });
 
-// LOW Severity - Yellow Marker
 const lowIcon = new L.Icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png",
@@ -110,6 +111,8 @@ const currentDotIcon = L.divIcon({
 
 });
 
+
+
 // =========================================================
 //                  RECENTER MAP
 // =========================================================
@@ -131,11 +134,23 @@ function RecenterMap({ location }) {
 //              CAPTURE MAP CLICK
 // =========================================================
 
-function LocationMarker({ setLat, setLon }) {
+function LocationMarker({
+
+  setLat,
+  setLon,
+  selectedRoad,
+  popupOpen
+
+}) {
 
   useMapEvents({
 
     click(e) {
+
+      // Disable map click if
+      // popup OR transparency panel open
+
+      if (selectedRoad || popupOpen) return;
 
       setLat(e.latlng.lat);
 
@@ -149,27 +164,687 @@ function LocationMarker({ setLat, setLon }) {
 }
 
 // =========================================================
+//              ROAD TRANSPARENCY PANEL
+// =========================================================
+
+function TransparencyPanel({
+
+  selectedRoad,
+  setSelectedRoad
+
+}) {
+
+  const [activeTab, setActiveTab] =
+    useState("details");
+
+  if (!selectedRoad) return null;
+
+  const tabStyle = (tab) => ({
+    flex: 1,
+    padding: "10px 12px",
+    border: "none",
+    borderRadius: "12px",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "14px",
+    transition: "0.2s",
+    background:
+      activeTab === tab
+        ? "#2563eb"
+        : "#f3f4f6",
+    color:
+      activeTab === tab
+        ? "white"
+        : "#111827",
+  });
+
+  return (
+
+    <div
+      style={{
+        position: "fixed",
+        top: "20px",
+        right: "20px",
+        width: "390px",
+        height: "85vh",
+        background: "white",
+        borderRadius: "22px",
+        boxShadow:
+          "0 10px 35px rgba(0,0,0,0.18)",
+        zIndex: 1000,
+        padding: "22px",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+
+      {/* HEADER */}
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent:
+            "space-between",
+          alignItems: "center",
+          marginBottom: "10px",
+        }}
+      >
+
+        <h2
+          style={{
+            margin: 0,
+            fontSize: "30px",
+            color: "#0f172a",
+          }}
+        >
+          Road Transparency
+        </h2>
+
+        <button
+          onClick={() =>
+            setSelectedRoad(null)
+          }
+          style={{
+            border: "none",
+            background: "transparent",
+            fontSize: "26px",
+            cursor: "pointer",
+            color: "#6b7280",
+          }}
+        >
+          ×
+        </button>
+
+      </div>
+
+      {/* ROAD NAME */}
+
+      <h3
+        style={{
+          marginBottom: "16px",
+          color: "#111827",
+        }}
+      >
+        {selectedRoad.road_name}
+      </h3>
+
+      {/* TABS */}
+
+      <div
+        style={{
+          display: "flex",
+          gap: "8px",
+          marginBottom: "18px",
+        }}
+      >
+
+        <button
+          style={tabStyle("details")}
+          onClick={() =>
+            setActiveTab("details")
+          }
+        >
+          Details
+        </button>
+
+        <button
+          style={tabStyle("history")}
+          onClick={() =>
+            setActiveTab("history")
+          }
+        >
+          History
+        </button>
+
+        <button
+          style={tabStyle("maintenance")}
+          onClick={() =>
+            setActiveTab("maintenance")
+          }
+        >
+          Maintenance
+        </button>
+
+      </div>
+
+      <div
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          paddingRight: "4px",
+        }}
+      >
+
+        {/* DETAILS TAB */}
+
+        {activeTab === "details" && (
+
+          <div
+            style={{
+              background: "#eff6ff",
+              padding: "18px",
+              borderRadius: "18px",
+              lineHeight: "1.8",
+            }}
+          >
+
+            <p style={{ marginBottom: "10px" }}>
+              <strong>Authority:</strong>{" "}
+              {selectedRoad.authority_name ||
+                "Not Assigned"}
+            </p>
+
+            <p style={{ marginBottom: "10px" }}>
+              <strong>Contractor:</strong>{" "}
+              {selectedRoad.contractor_name ||
+                "Not Assigned"}
+            </p>
+
+            <p style={{ marginBottom: "10px" }}>
+              <strong>Budget Allocated:</strong>{" "}
+              ₹{selectedRoad.allocated_budget || 0}
+            </p>
+
+            <p style={{ marginBottom: "10px" }}>
+              <strong>Budget Spent:</strong>{" "}
+              ₹{selectedRoad.spent_budget || 0}
+            </p>
+
+            <p style={{ marginBottom: "10px" }}>
+              <strong>Funding Source:</strong>{" "}
+              GCC Road Fund
+            </p>
+
+            <p style={{ marginBottom: "10px" }}>
+              <strong>Last Repaired:</strong>{" "}
+              12 Jan 2025
+            </p>
+
+            
+
+          </div>
+
+        )}
+
+        {/* HISTORY TAB */}
+        {activeTab === "history" && (
+
+  <div>
+
+    {/* CARD 1 */}
+
+    <div
+      style={{
+        background: "#eff6ff",
+        padding: "18px",
+        borderRadius: "18px",
+        marginBottom: "14px",
+        lineHeight: "1.8",
+        border: "1px solid #bfdbfe",
+      }}
+    >
+
+      <p>
+        <strong>Date:</strong>
+        12 Apr 2026
+      </p>
+
+      <p>
+        <strong>Repair:</strong>
+        Crack Repair
+      </p>
+
+      <p>
+        <strong>Contractor:</strong>
+        ABC Infra
+      </p>
+
+      <p>
+        <strong>Cost:</strong>
+        ₹20,000
+      </p>
+
+      <p
+        style={{
+          color: "#16a34a",
+          fontWeight: "bold",
+        }}
+      >
+        Completed
+      </p>
+
+    </div>
+
+    {/* CARD 2 */}
+
+    <div
+      style={{
+        background: "#fef3c7",
+        padding: "18px",
+        borderRadius: "18px",
+        marginBottom: "14px",
+        lineHeight: "1.8",
+        border: "1px solid #fde68a",
+      }}
+    >
+
+      <p>
+        <strong>Date:</strong>
+        05 Jan 2026
+      </p>
+
+      <p>
+        <strong>Repair:</strong>
+        Pothole Filling
+      </p>
+
+      <p>
+        <strong>Contractor:</strong>
+        XYZ Roads
+      </p>
+
+      <p>
+        <strong>Cost:</strong>
+        ₹8,000
+      </p>
+
+      <p
+        style={{
+          color: "#16a34a",
+          fontWeight: "bold",
+        }}
+      >
+        Completed
+      </p>
+
+    </div>
+
+    {/* CARD 3 */}
+
+    <div
+      style={{
+        background: "#dcfce7",
+        padding: "18px",
+        borderRadius: "18px",
+        lineHeight: "1.8",
+        border: "1px solid #86efac",
+      }}
+    >
+
+      <p>
+        <strong>Date:</strong>
+        20 Oct 2025
+      </p>
+
+      <p>
+        <strong>Repair:</strong>
+        Road Relaying
+      </p>
+
+      <p>
+        <strong>Contractor:</strong>
+        Metro Infra
+      </p>
+
+      <p>
+        <strong>Cost:</strong>
+        ₹65,000
+      </p>
+
+      <p
+        style={{
+          color: "#16a34a",
+          fontWeight: "bold",
+        }}
+      >
+        Completed
+      </p>
+
+    </div>
+
+  </div>
+
+)}
+        {/* MAINTENANCE TAB */}
+
+       
+{activeTab === "maintenance" && (
+
+  <div>
+
+    {/* CARD 1 */}
+
+    <div
+      style={{
+        background: "#eff6ff",
+        padding: "18px",
+        borderRadius: "18px",
+        marginBottom: "14px",
+        lineHeight: "1.8",
+        border: "1px solid #bfdbfe",
+      }}
+    >
+
+      <p>
+        <strong>Date:</strong>
+        30 May 2026
+      </p>
+
+      <p>
+        <strong>Maintenance:</strong>
+        Road Inspection
+      </p>
+
+      <p
+        style={{
+          color: "#d97706",
+          fontWeight: "bold",
+        }}
+      >
+        Pending
+      </p>
+
+    </div>
+
+    {/* CARD 2 */}
+
+    <div
+      style={{
+        background: "#fef3c7",
+        padding: "18px",
+        borderRadius: "18px",
+        marginBottom: "14px",
+        lineHeight: "1.8",
+        border: "1px solid #fde68a",
+      }}
+    >
+
+      <p>
+        <strong>Date:</strong>
+        15 Jun 2026
+      </p>
+
+      <p>
+        <strong>Maintenance:</strong>
+        Road Resurfacing
+      </p>
+
+      <p
+        style={{
+          color: "#2563eb",
+          fontWeight: "bold",
+        }}
+      >
+        Planned
+      </p>
+
+    </div>
+
+    {/* CARD 3 */}
+
+    <div
+      style={{
+        background: "#dcfce7",
+        padding: "18px",
+        borderRadius: "18px",
+        lineHeight: "1.8",
+        border: "1px solid #86efac",
+      }}
+    >
+
+      <p>
+        <strong>Date:</strong>
+        02 Jul 2026
+      </p>
+
+      <p>
+        <strong>Maintenance:</strong>
+        Crack Sealing
+      </p>
+
+      <p
+        style={{
+          color: "#16a34a",
+          fontWeight: "bold",
+        }}
+      >
+        Scheduled
+      </p>
+
+    </div>
+
+  </div>
+
+)}
+
+      </div>
+
+    </div>
+
+  );
+}
+
+// =========================================================
+//              SIMPLE POPUP
+// =========================================================
+
+function ComplaintPopup({
+
+  complaint,
+  setSelectedRoad,
+  setLat,
+  setLon
+}) {
+
+  return (
+
+    <div
+      style={{
+        width: "280px",
+        fontFamily: "Arial",
+      }}
+    >
+
+      <h3
+        style={{
+          marginBottom: "12px",
+          color: "#111827",
+        }}
+      >
+        {complaint.road_name}
+      </h3>
+
+      <div
+        style={{
+          background: "#f1f2f3",
+          padding: "4px",
+          borderRadius: "18px",
+        }}
+      >
+
+        <p style={{ marginBottom: "8px" }}>
+          <strong>Road Type:</strong>{" "}
+          {complaint.road_type}
+        </p>
+
+        <p style={{ marginBottom: "8px" }}>
+          <strong>Issue:</strong>{" "}
+          {complaint.issue}
+        </p>
+
+        <p style={{ marginBottom: "8px" }}>
+
+          <strong>Severity:</strong>{" "}
+
+          <span
+            style={{
+              color:
+                complaint.severity === "HIGH"
+                  ? "#dc2626"
+                  : complaint.severity === "MEDIUM"
+                  ? "#d97706"
+                  : "#16a34a",
+              fontWeight: "bold",
+            }}
+          >
+            {complaint.severity}
+          </span>
+
+        </p>
+
+        <p style={{ marginBottom: "10px" }}>
+
+  <strong>
+    Assigned Authority:
+  </strong>{" "}
+
+  <span
+    style={{
+      color: "#1e3a8a",
+      fontWeight: "600",
+    }}
+  >
+
+    {complaint.authority_name ||
+      "Not Assigned"}
+
+  </span>
+
+</p>
+
+        <p
+          style={{
+            marginBottom: "14px",
+            lineHeight: "1.5",
+          }}
+        >
+          <strong>Description:</strong>{" "}
+          {complaint.description}
+        </p>
+
+        {complaint.image_url && (
+
+          <img
+            src={`http://127.0.0.1:5000/${complaint.image_url}`}
+            alt="Road"
+            style={{
+              width: "100%",
+              height: "200px",
+              objectFit: "cover",
+              borderRadius: "4px",
+            }}
+          />
+
+        )}
+
+      </div>
+
+      <button
+         onClick={() => {
+
+  setLat(null);
+  setLon(null);
+
+  setSelectedRoad(complaint);
+
+}}
+        style={{
+          width: "100%",
+          marginTop: "14px",
+          padding: "12px",
+          border: "none",
+          borderRadius: "14px",
+          background: "#2563eb",
+          color: "white",
+          fontWeight: "bold",
+          cursor: "pointer",
+          fontSize: "14px",
+        }}
+      >
+        View Road Transparency →
+      </button>
+
+    </div>
+
+  );
+}
+
+function SearchField() {
+
+  const map = useMap();
+
+  useEffect(() => {
+
+    const provider =
+      new OpenStreetMapProvider();
+
+    const searchControl =
+      new GeoSearchControl({
+
+        provider,
+
+        style: "bar",
+
+        autoComplete: true,
+
+        autoCompleteDelay: 250,
+
+        showMarker: true,
+
+        showPopup: false,
+
+        marker: {
+          icon: new L.Icon.Default(),
+          draggable: false,
+        },
+
+        maxMarkers: 1,
+
+        retainZoomLevel: false,
+
+        animateZoom: true,
+
+        autoClose: true,
+
+        searchLabel:
+          "Search location...",
+
+        keepResult: true,
+
+      });
+
+    map.addControl(searchControl);
+
+    return () =>
+      map.removeControl(searchControl);
+
+  }, [map]);
+
+  return null;
+}
+
+// =========================================================
 //                  MAIN COMPONENT
 // =========================================================
 
 function MapComponent() {
 
-  // Selected complaint coordinates
   const [lat, setLat] = useState(null);
 
   const [lon, setLon] = useState(null);
 
-  // User current location
+  const [popupOpen, setPopupOpen] =
+  useState(false);
+
   const [currentLocation, setCurrentLocation] =
     useState(null);
 
-  // Backend complaints
   const [complaints, setComplaints] =
     useState([]);
 
-  // =========================================================
-  //              ROUTE PARAMS
-  // =========================================================
+  const [selectedRoad, setSelectedRoad] =
+    useState(null);
 
   const location = useLocation();
 
@@ -179,10 +854,6 @@ function MapComponent() {
   const focusedLat = params.get("lat");
 
   const focusedLon = params.get("lon");
-
-  // =========================================================
-  //              GET CURRENT LOCATION
-  // =========================================================
 
   useEffect(() => {
 
@@ -206,10 +877,6 @@ function MapComponent() {
     );
 
   }, []);
-
-  // =========================================================
-  //              FETCH COMPLAINTS
-  // =========================================================
 
   const fetchComplaints = () => {
 
@@ -244,10 +911,6 @@ function MapComponent() {
 
   }, []);
 
-  // =========================================================
-  //                  LOADING SCREEN
-  // =========================================================
-
   if (!currentLocation) {
 
     return (
@@ -269,10 +932,6 @@ function MapComponent() {
 
   }
 
-  // =========================================================
-  //                  MAP CENTER
-  // =========================================================
-
   const mapCenter =
 
     focusedLat && focusedLon
@@ -284,10 +943,6 @@ function MapComponent() {
 
       : currentLocation;
 
-  // =========================================================
-  //                  MAIN UI
-  // =========================================================
-
   return (
 
     <div
@@ -297,6 +952,13 @@ function MapComponent() {
         width: "100%",
       }}
     >
+
+      {/* TRANSPARENCY PANEL */}
+
+      <TransparencyPanel
+        selectedRoad={selectedRoad}
+        setSelectedRoad={setSelectedRoad}
+      />
 
       {/* COMPLAINT FORM */}
 
@@ -319,26 +981,22 @@ function MapComponent() {
         }}
       >
 
-        {/* MAP TILES */}
-
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* RECENTER */}
+        <SearchField />
 
         <RecenterMap
           location={mapCenter}
         />
 
-        {/* CLICK LOCATION */}
-
         <LocationMarker
-          setLat={setLat}
-          setLon={setLon}
+            setLat={setLat}
+            setLon={setLon}
+            selectedRoad={selectedRoad}
+            popupOpen={popupOpen}
         />
-
-        {/* CURRENT LOCATION */}
 
         <Circle
           center={currentLocation}
@@ -372,66 +1030,20 @@ function MapComponent() {
             icon={c.icon}
           >
 
-            <Popup>
+            <Popup
+  maxWidth={320}
+  eventHandlers={{
+    add: () => setPopupOpen(true),
+    remove: () => setPopupOpen(false),
+  }}
+>
 
-              <div style={{ width: "260px" }}>
-
-                <h3>{c.road_name}</h3>
-
-                <p>
-                  <strong>Issue:</strong> {c.issue}
-                </p>
-
-                <p>
-                  <strong>Severity:</strong> {c.severity}
-                </p>
-
-                <p>
-                  <strong>Road Type:</strong> {c.road_type}
-                </p>
-
-                <p>
-                  <strong>Contractor:</strong>
-                  {c.contractor_name}
-                </p>
-
-                <p>
-                  <strong>Authority:</strong>
-                  {c.authority_name}
-                </p>
-
-                <p>
-                  <strong>Budget Allocated:</strong>
-                  ₹{c.allocated_budget}
-                </p>
-
-                <p>
-                  <strong>Budget Spent:</strong>
-                  ₹{c.spent_budget}
-                </p>
-
-                <p>
-                  <strong>Description:</strong>
-                  {c.description}
-                </p>
-
-                {c.image_url && (
-
-                  <img
-                     src={`http://127.0.0.1:5000/${c.image_url}`}
-                    alt="Road Issue"
-                    style={{
-                      width: "100%",
-                      height: "150px",
-                      objectFit: "cover",
-                      borderRadius: "10px",
-                      marginTop: "10px",
-                    }}
-                  />
-
-                )}
-
-              </div>
+              <ComplaintPopup
+  complaint={c}
+  setSelectedRoad={setSelectedRoad}
+  setLat={setLat}
+  setLon={setLon}
+/>
 
             </Popup>
 
@@ -442,6 +1054,7 @@ function MapComponent() {
       </MapContainer>
 
     </div>
+
   );
 }
 

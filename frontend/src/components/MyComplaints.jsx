@@ -38,11 +38,37 @@ function MyComplaints() {
 
   )
 
-    .then((res) => res.json())
+    .then((res) => {
+
+      // ===============================
+      // SESSION EXPIRED
+      // ===============================
+
+      if (res.status === 401) {
+
+        alert(
+          "Session expired. Please login again."
+        );
+
+        localStorage.clear();
+
+        window.location.href = "/";
+
+        return null;
+
+      }
+
+      return res.json();
+
+    })
 
     .then((data) => {
 
-      setComplaints(data);
+      if (data) {
+
+        setComplaints(data);
+
+      }
 
     })
 
@@ -204,7 +230,11 @@ function MyComplaints() {
 
               <th>Status</th>
 
+              <th>AI Alerts</th>
+
               <th>Actions</th>
+
+              
 
             </tr>
 
@@ -246,6 +276,69 @@ function MyComplaints() {
                     </span>
 
                   </td>
+
+                  <td>
+
+  {
+    c.anomalies &&
+    c.anomalies.length > 0 ? (
+
+      <details
+        className="insight-dropdown"
+      >
+
+        <summary
+          className="insight-btn"
+        >
+
+          View Insights
+
+        </summary>
+
+        <div
+          className="insight-box"
+        >
+
+          {
+
+            c.anomalies.map(
+              (alert, index) => (
+
+                <div
+                  key={index}
+                  className="anomaly-alert"
+                >
+
+                  ⚠️ {alert}
+
+                </div>
+
+              )
+            )
+
+          }
+
+        </div>
+
+      </details>
+
+    ) : (
+
+      <span
+        style={{
+          color: "#64748b",
+          fontWeight: "500",
+        }}
+      >
+
+        No Alerts
+
+      </span>
+
+    )
+  }
+
+</td>
 
                   <td>
 

@@ -53,13 +53,35 @@ fetch(
   }
 )
 
-      .then((res) => res.json())
+      .then((res) => {
 
-      .then((data) => {
+  if (res.status === 401) {
 
-        setComplaints(data);
+    alert(
+      "Session expired. Please login again."
+    );
 
-      })
+    localStorage.clear();
+
+    window.location.href = "/";
+
+    return null;
+
+  }
+
+  return res.json();
+
+})
+
+     .then((data) => {
+
+  if (data) {
+
+    setComplaints(data);
+
+  }
+
+})
 
       .catch((err) => {
 
@@ -425,6 +447,10 @@ fetch(
                   AI Insights
               </th>
 
+              <th style={thStyle}>
+                  Actions
+              </th>
+
             </tr>
 
           </thead>
@@ -602,6 +628,60 @@ fetch(
 
 </td>
 
+<td style={tdStyle}>
+
+  {/* STATUS UPDATE */}
+
+  <select
+    style={{
+      padding: "8px",
+      borderRadius: "8px",
+      marginBottom: "10px",
+      width: "100%",
+    }}
+    defaultValue={c.status}
+  >
+
+    <option value="ACTIVE">
+      ACTIVE
+    </option>
+
+    <option value="IN_PROGRESS">
+      IN_PROGRESS
+    </option>
+
+    <option value="RESOLVED">
+      RESOLVED
+    </option>
+
+  </select>
+
+  {/* REPAIR HISTORY */}
+
+  <button
+    style={actionBtn}
+  >
+
+    Add Repair
+
+  </button>
+
+  {/* MAINTENANCE */}
+
+  <button
+    style={{
+      ...actionBtn,
+      background: "#0f766e",
+      marginTop: "8px",
+    }}
+  >
+
+    Schedule Maintenance
+
+  </button>
+
+</td>
+
                   </tr>
 
                 )
@@ -614,7 +694,7 @@ fetch(
                 <tr>
 
                   <td
-                    colSpan="7"
+                    colSpan="8"
                     style={{
                       ...tdStyle,
                       textAlign:
@@ -810,4 +890,26 @@ const anomalyStyle = {
   marginBottom: "6px",
 
   width: "fit-content",
+};
+
+const actionBtn = {
+
+  width: "100%",
+
+  padding: "8px 12px",
+
+  border: "none",
+
+  borderRadius: "8px",
+
+  background: "#1d4ed8",
+
+  color: "white",
+
+  fontWeight: "600",
+
+  cursor: "pointer",
+
+  fontSize: "13px",
+
 };

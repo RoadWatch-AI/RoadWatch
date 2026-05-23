@@ -64,6 +64,9 @@ const Dashboard = () => {
           contractor:
             c.contractor_name || "Not Assigned",
 
+          anomalies:
+            c.anomalies || [],  
+
           resolutionDays: 3,
 
         }));
@@ -220,7 +223,7 @@ const zoneGraphData = Object.keys(
 
     "No Data";
 
-  const fastestZone = pendingZone;
+  
 
   // =================== UI ===================
 
@@ -361,17 +364,7 @@ const zoneGraphData = Object.keys(
 
           </div>
 
-          <div style={authorityCard}>
-
-            <h3 style={smallTitle}>
-              Fastest Zone
-            </h3>
-
-            <p style={bigValue}>
-              {fastestZone}
-            </p>
-
-          </div>
+          
 
           <div style={authorityCard}>
 
@@ -610,6 +603,10 @@ const zoneGraphData = Object.keys(
                 Contractor
               </th>
 
+              <th style={thStyle}>
+                 AI Alerts
+              </th>
+
             </tr>
 
           </thead>
@@ -706,6 +703,70 @@ const zoneGraphData = Object.keys(
                   <td style={tdStyle}>
                     {row.contractor}
                   </td>
+
+                  <td style={tdStyle}>
+
+  {
+
+    row.anomalies.length > 0 ? (
+
+      <details>
+
+        <summary
+          style={insightBtn}
+        >
+
+          View Alerts
+
+        </summary>
+
+        <div
+          style={{
+            marginTop: "10px",
+          }}
+        >
+
+          {
+
+            row.anomalies.map(
+              (alert, index) => (
+
+                <div
+                  key={index}
+                  style={anomalyStyle}
+                >
+
+                  ⚠️ {alert}
+
+                </div>
+
+              )
+            )
+
+          }
+
+        </div>
+
+      </details>
+
+    ) : (
+
+      <span
+        style={{
+          color: "#64748b",
+          fontWeight: "500",
+        }}
+      >
+
+        No Alerts
+
+      </span>
+
+    )
+
+  }
+
+</td>
 
                 </tr>
 
@@ -893,4 +954,46 @@ const filterSelect = {
   borderRadius: "10px",
   border: "1px solid #ccc",
   outline: "none",
+};
+
+const insightBtn = {
+
+  background: "#1e3a8a",
+
+  color: "white",
+
+  padding: "8px 14px",
+
+  borderRadius: "10px",
+
+  cursor: "pointer",
+
+  fontSize: "13px",
+
+  fontWeight: "600",
+
+  width: "fit-content",
+
+  userSelect: "none",
+};
+
+const anomalyStyle = {
+
+  background: "#fff7ed",
+
+  color: "#c2410c",
+
+  border: "1px solid #fdba74",
+
+  padding: "8px 12px",
+
+  borderRadius: "10px",
+
+  fontSize: "12px",
+
+  fontWeight: "600",
+
+  marginBottom: "6px",
+
+  width: "fit-content",
 };
