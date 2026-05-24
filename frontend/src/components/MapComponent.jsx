@@ -8,9 +8,6 @@ import {
   useMap
 } from "react-leaflet";
 
-import { GeoSearchControl, OpenStreetMapProvider } 
-from "leaflet-geosearch";
-
 import { useState, useEffect } from "react";
 
 import { useLocation } from "react-router-dom";
@@ -634,48 +631,113 @@ function ComplaintPopup({
   complaint,
   setSelectedRoad,
   setLat,
-  setLon
+  setLon,
+  setPopupOpen
+
 }) {
+
+  const [previewImage, setPreviewImage] =
+      useState(null);
 
   return (
 
-    <div
-      style={{
-        width: "280px",
-        fontFamily: "Arial",
-      }}
-    >
-
-      <h3
-        style={{
-          marginBottom: "12px",
-          color: "#111827",
-        }}
-      >
-        {complaint.road_name}
-      </h3>
+    <>
 
       <div
         style={{
-          background: "#f1f2f3",
-          padding: "4px",
-          borderRadius: "18px",
+          width: "270px",
+          fontFamily: "Arial, sans-serif",
         }}
       >
 
-        <p style={{ marginBottom: "8px" }}>
-          <strong>Road Type:</strong>{" "}
-          {complaint.road_type}
+        {/* TITLE */}
+
+        <h3
+          style={{
+            marginBottom: "16px",
+            color: "#111827",
+            fontSize: "28px",
+            fontWeight: "700",
+          }}
+        >
+          {complaint.road_name}
+        </h3>
+
+        {/* ROAD TYPE */}
+
+        <p
+          style={{
+            marginBottom: "6px",
+            lineHeight: "0.8",
+            fontSize: "16px",
+          }}
+        >
+
+          <strong
+            style={{
+              color: "#111827",
+            }}
+          >
+            Road Type:
+          </strong>{" "}
+
+          <span
+            style={{
+              color: "#1e293b",
+              fontWeight: "500",
+            }}
+          >
+            {complaint.road_type}
+          </span>
+
         </p>
 
-        <p style={{ marginBottom: "8px" }}>
-          <strong>Issue:</strong>{" "}
-          {complaint.issue}
+        {/* ISSUE */}
+
+        <p
+          style={{
+            marginBottom: "6px",
+            lineHeight: "0.8",
+            fontSize: "16px",
+          }}
+        >
+
+          <strong
+            style={{
+              color: "#111827",
+            }}
+          >
+            Issue:
+          </strong>{" "}
+
+          <span
+            style={{
+              color: "#1e293b",
+              fontWeight: "500",
+            }}
+          >
+            {complaint.issue}
+          </span>
+
         </p>
 
-        <p style={{ marginBottom: "8px" }}>
+        {/* SEVERITY */}
 
-          <strong>Severity:</strong>{" "}
+        <p
+          style={{
+            marginBottom: "6px",
+            lineHeight: "0.8",
+            fontSize: "16px",
+          }}
+        >
+
+          <strong
+            style={{
+              color: "#111827",
+            }}
+          >
+            Severity:
+          </strong>{" "}
 
           <span
             style={{
@@ -685,144 +747,236 @@ function ComplaintPopup({
                   : complaint.severity === "MEDIUM"
                   ? "#d97706"
                   : "#16a34a",
-              fontWeight: "bold",
+
+              fontWeight: "700",
             }}
           >
+
             {complaint.severity}
+
           </span>
 
         </p>
 
-        <p style={{ marginBottom: "10px" }}>
-
-  <strong>
-    Assigned Authority:
-  </strong>{" "}
-
-  <span
-    style={{
-      color: "#1e3a8a",
-      fontWeight: "600",
-    }}
-  >
-
-    {complaint.authority_name ||
-      "Not Assigned"}
-
-  </span>
-
-</p>
+        {/* AUTHORITY */}
 
         <p
           style={{
-            marginBottom: "14px",
-            lineHeight: "1.5",
+            marginBottom: "6px",
+            lineHeight: "0.8",
+            fontSize: "16px",
           }}
         >
-          <strong>Description:</strong>{" "}
-          {complaint.description}
+
+          <strong
+            style={{
+              color: "#111827",
+            }}
+          >
+            Assigned Authority:
+          </strong>{" "}
+
+          <span
+            style={{
+              color: "#1e293b",
+              fontWeight: "500",
+            }}
+          >
+
+            {complaint.authority_name ||
+              "Not Assigned"}
+
+          </span>
+
         </p>
 
+        {/* DESCRIPTION */}
+
+        <p
+          style={{
+            marginBottom: "10px",
+            lineHeight: "0.8",
+            fontSize: "16px",
+          }}
+        >
+
+          <strong
+            style={{
+              color: "#111827",
+            }}
+          >
+            Description:
+          </strong>{" "}
+
+          <span
+            style={{
+              color: "#1e293b",
+              fontWeight: "500",
+            }}
+          >
+
+            {complaint.description}
+
+          </span>
+
+        </p>
+
+        {/* IMAGE */}
         {complaint.image_url && (
 
-          <img
-            src={`http://127.0.0.1:5000/${complaint.image_url}`}
-            alt="Road"
-            style={{
-              width: "100%",
-              height: "200px",
-              objectFit: "cover",
-              borderRadius: "4px",
-            }}
-          />
+  complaint.media_type ===
+  "video" ? (
 
-        )}
+    <video
+      controls
+      style={{
+        width: "100%",
+        height: "170px",
+        borderRadius: "14px",
+        marginTop: "4px",
+      }}
+    >
+
+      <source
+        src={`http://127.0.0.1:5000/${complaint.image_url}`}
+      />
+
+    </video>
+
+  ) : (
+
+    <img
+      src={`http://127.0.0.1:5000/${complaint.image_url}`}
+      alt="Road"
+
+      onClick={() =>
+        setPreviewImage(
+          `http://127.0.0.1:5000/${complaint.image_url}`
+        )
+      }
+
+      style={{
+        width: "100%",
+        height: "170px",
+        objectFit: "cover",
+        borderRadius: "14px",
+        marginTop: "4px",
+        cursor: "pointer",
+      }}
+    />
+
+  )
+
+)}
+
+        {/* BUTTON */}
+
+        <button
+
+          onClick={() => {
+
+            setLat(null);
+
+            setLon(null);
+
+            setPopupOpen(false);
+
+            setSelectedRoad(complaint);
+
+          }}
+
+          style={{
+
+            width: "100%",
+
+            marginTop: "14px",
+
+            padding: "12px",
+
+            border: "none",
+
+            borderRadius: "14px",
+
+            background: "#2563eb",
+
+            color: "white",
+
+            fontWeight: "700",
+
+            cursor: "pointer",
+
+            fontSize: "14px",
+
+          }}
+
+        >
+
+          View Road Transparency →
+
+        </button>
 
       </div>
 
-      <button
-         onClick={() => {
+      {/* IMAGE PREVIEW */}
 
-  setLat(null);
-  setLon(null);
+      {previewImage && (
 
-  setSelectedRoad(complaint);
+        <div
 
-}}
-        style={{
-          width: "100%",
-          marginTop: "14px",
-          padding: "12px",
-          border: "none",
-          borderRadius: "14px",
-          background: "#2563eb",
-          color: "white",
-          fontWeight: "bold",
-          cursor: "pointer",
-          fontSize: "14px",
-        }}
-      >
-        View Road Transparency →
-      </button>
+          onClick={() =>
+            setPreviewImage(null)
+          }
 
-    </div>
+          style={{
+
+            position: "fixed",
+
+            top: 0,
+
+            left: 0,
+
+            width: "100vw",
+
+            height: "100vh",
+
+            background:
+              "rgba(0,0,0,0.75)",
+
+            display: "flex",
+
+            alignItems: "center",
+
+            justifyContent: "center",
+
+            zIndex: 9999,
+
+            cursor: "pointer",
+
+          }}
+        >
+
+          <img
+            src={previewImage}
+            alt="Preview"
+
+            style={{
+              maxWidth: "90%",
+              maxHeight: "90%",
+              borderRadius: "16px",
+            }}
+          />
+
+        </div>
+
+      )}
+
+    </>
 
   );
+
 }
 
-function SearchField() {
 
-  const map = useMap();
-
-  useEffect(() => {
-
-    const provider =
-      new OpenStreetMapProvider();
-
-    const searchControl =
-      new GeoSearchControl({
-
-        provider,
-
-        style: "bar",
-
-        autoComplete: true,
-
-        autoCompleteDelay: 250,
-
-        showMarker: true,
-
-        showPopup: false,
-
-        marker: {
-          icon: new L.Icon.Default(),
-          draggable: false,
-        },
-
-        maxMarkers: 1,
-
-        retainZoomLevel: false,
-
-        animateZoom: true,
-
-        autoClose: true,
-
-        searchLabel:
-          "Search location...",
-
-        keepResult: true,
-
-      });
-
-    map.addControl(searchControl);
-
-    return () =>
-      map.removeControl(searchControl);
-
-  }, [map]);
-
-  return null;
-}
 
 // =========================================================
 //                  MAIN COMPONENT
@@ -967,6 +1121,8 @@ function MapComponent() {
         <ComplaintForm
           lat={lat}
           lon={lon}
+          setLat={setLat}
+          setLon={setLon}
           refreshComplaints={fetchComplaints}
         />
 
@@ -984,8 +1140,6 @@ function MapComponent() {
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-
-        <SearchField />
 
         <RecenterMap
           location={mapCenter}
@@ -1043,6 +1197,7 @@ function MapComponent() {
   setSelectedRoad={setSelectedRoad}
   setLat={setLat}
   setLon={setLon}
+  setPopupOpen={setPopupOpen}
 />
 
             </Popup>

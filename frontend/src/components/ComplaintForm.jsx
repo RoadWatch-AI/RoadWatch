@@ -4,6 +4,8 @@ import { Upload } from "lucide-react";
 function ComplaintForm({
   lat,
   lon,
+  setLat,
+  setLon,
   refreshComplaints
 }) {
 
@@ -191,16 +193,58 @@ function ComplaintForm({
                           HEADING
       ========================================================= */}
 
-      <h2
-        style={{
-          marginBottom: "20px",
-          color: "#1e293b",
-          textAlign: "center",
-          fontSize: "32px",
-        }}
-      >
-        Report Road Issue
-      </h2>
+      <div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "20px",
+  }}
+>
+
+  <h2
+    style={{
+      margin: 0,
+      color: "#1e293b",
+      fontSize: "32px",
+    }}
+  >
+    Report Road Issue
+  </h2>
+
+  <button
+
+    onClick={() => {
+
+      setLat(null);
+
+      setLon(null);
+
+    }}
+
+    style={{
+
+      border: "none",
+
+      background: "transparent",
+
+      fontSize: "28px",
+
+      cursor: "pointer",
+
+      color: "#6b7280",
+
+      fontWeight: "bold",
+
+    }}
+
+  >
+
+    ×
+
+  </button>
+
+</div>
 
       {/* =========================================================
                       LOCATION STATUS
@@ -246,7 +290,7 @@ function ComplaintForm({
 
         <input
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           onChange={handleImageChange}
           style={{ display: "none" }}
         />
@@ -287,7 +331,7 @@ function ComplaintForm({
                 fontSize: "16px",
               }}
             >
-              Upload Road Image
+              Upload Road Image/Video
             </p>
 
           </div>
