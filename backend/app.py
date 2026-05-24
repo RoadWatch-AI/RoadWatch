@@ -13,6 +13,7 @@ from flask_jwt_extended import (
 )
 
 import bcrypt
+import cv2
 
 app = Flask(__name__)
 CORS(app)
@@ -109,9 +110,6 @@ def predict_severity(
 
         return "LOW"
     
-# =========================================================
-#              ANOMALY DETECTION ENGINE
-# =========================================================
 
 # =========================================================
 #              ANOMALY DETECTION ENGINE
@@ -217,6 +215,35 @@ def detect_anomaly(
         )
 
     return anomalies
+
+# =========================================================
+#              VIDEO FRAME EXTRACTION
+# =========================================================
+
+def extract_frame(video_path):
+
+    cap = cv2.VideoCapture(video_path)
+
+    success, frame = cap.read()
+
+    if success:
+
+        frame_path = (
+            "uploads/frame.jpg"
+        )
+
+        cv2.imwrite(
+            frame_path,
+            frame
+        )
+
+        cap.release()
+
+        return frame_path
+
+    cap.release()
+
+    return None
 
 # =========================================================
 #                    TABLES
@@ -359,6 +386,10 @@ class Complaint(db.Model):
     status = db.Column(
         db.String(20),
         default="ACTIVE"
+    )
+    
+    media_type = db.Column(
+    db.String(20)
     )
 
     authority_id = db.Column(
@@ -650,7 +681,7 @@ def create_complaint():
     #                    IMAGE HANDLING
     # =========================================================
 
-    image = request.files.get("image")
+    media = request.files.get("image")
 
     image_path = None
 
@@ -659,14 +690,27 @@ def create_complaint():
     severity = "LOW"
 
     confidence_score = 0
+    
+    media_type = "image"
 
-    if image:
+    if media:
 
-        filename = secure_filename(image.filename)
-
+        filename = secure_filename(
+        media.filename
+)
+        is_video = filename.lower().endswith(
+           (".mp4", ".mov", ".avi")
+   )
+         
+        media_type = (
+        "video"
+        if is_video
+        else "image"
+    )
+        
         image_path = f"uploads/{filename}"
-
-        image.save(
+       
+        media.save(
         os.path.join(
         app.config["UPLOAD_FOLDER"],
         filename
@@ -678,8 +722,23 @@ def create_complaint():
 
         try:
 
-            results = model(image_path, conf=0.55)
+            if is_video:
 
+             frame_path = extract_frame(
+             image_path
+         )
+
+             results = model(
+             frame_path,
+             conf=0.55
+     )
+
+            else:
+
+             results = model(
+             image_path,
+             conf=0.55
+    )
             highest_conf = 0
 
             for result in results:
@@ -784,7 +843,9 @@ def create_complaint():
 
         project_id=project_id,
 
-        user_id=user_id
+        user_id=user_id,
+        
+        media_type=media_type,
 
     )
 
@@ -913,6 +974,8 @@ def get_complaints():
             "description": complaint.description,
 
             "image_url": complaint.image_url,
+            
+            "media_type": complaint.media_type,
 
             "issue": complaint.issue,
 
@@ -1029,6 +1092,8 @@ def get_my_complaints():
             "description": complaint.description,
 
             "image_url": complaint.image_url,
+            
+            "media_type": complaint.media_type,
 
             "issue": complaint.issue,
 
@@ -1139,7 +1204,9 @@ def authority_complaints():
 
             "created_at": complaint.created_at,
 
-            "area": complaint.area
+            "area": complaint.area,
+            
+            "media_type": complaint.media_type,
 
         })
 
