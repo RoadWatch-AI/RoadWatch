@@ -224,13 +224,24 @@ def extract_frame(video_path):
 
     cap = cv2.VideoCapture(video_path)
 
+    total_frames = int(
+        cap.get(
+            cv2.CAP_PROP_FRAME_COUNT
+        )
+    )
+
+    middle_frame = total_frames // 2
+
+    cap.set(
+        cv2.CAP_PROP_POS_FRAMES,
+        middle_frame
+    )
+
     success, frame = cap.read()
 
     if success:
 
-        frame_path = (
-            "uploads/frame.jpg"
-        )
+        frame_path = "uploads/frame.jpg"
 
         cv2.imwrite(
             frame_path,
@@ -244,7 +255,6 @@ def extract_frame(video_path):
     cap.release()
 
     return None
-
 # =========================================================
 #                    TABLES
 # =========================================================
@@ -730,7 +740,7 @@ def create_complaint():
 
              results = model(
              frame_path,
-             conf=0.55
+             conf=0.35
      )
 
             else:
