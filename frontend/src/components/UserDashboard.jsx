@@ -12,6 +12,10 @@ function UserDashboard() {
 
   const [complaints, setComplaints] =
     useState([]);
+  const safeComplaints =
+  Array.isArray(complaints)
+    ? complaints
+    : [];
 
   // =========================================================
   // FETCH REAL USER COMPLAINTS
@@ -71,20 +75,20 @@ function UserDashboard() {
   // =========================================================
 
   const totalComplaints =
-    complaints.length;
+    safeComplaints.length;
 
   const activeComplaints =
-    complaints.filter(
+    safeComplaints.filter(
       (c) => c.status === "ACTIVE"
     ).length;
 
   const progressComplaints =
-    complaints.filter(
+    safeComplaints.filter(
       (c) => c.status === "IN_PROGRESS"
     ).length;
 
   const resolvedComplaints =
-    complaints.filter(
+    safeComplaints.filter(
       (c) => c.status === "RESOLVED"
     ).length;
 
@@ -224,9 +228,9 @@ function UserDashboard() {
 
             <tbody>
 
-              {complaints.length > 0 ? (
+              {safeComplaints.length > 0 ? (
 
-                complaints.map((c, index) => (
+                safeComplaints.map((c, index) => (
 
                   <tr key={index}>
 
