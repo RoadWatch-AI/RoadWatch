@@ -224,37 +224,37 @@ def extract_frame(video_path):
 
     cap = cv2.VideoCapture(video_path)
 
-    total_frames = int(
-        cap.get(
-            cv2.CAP_PROP_FRAME_COUNT
-        )
-    )
+    frame_paths = []
 
-    middle_frame = total_frames // 2
+    frame_count = 0
 
-    cap.set(
-        cv2.CAP_PROP_POS_FRAMES,
-        middle_frame
-    )
+    while True:
 
-    success, frame = cap.read()
+        success, frame = cap.read()
 
-    if success:
+        if not success:
+            break
 
-        frame_path = "uploads/frame.jpg"
+        if frame_count % 30 == 0:
 
-        cv2.imwrite(
-            frame_path,
-            frame
-        )
+            frame_path = (
+                f"uploads/frame_{frame_count}.jpg"
+            )
 
-        cap.release()
+            cv2.imwrite(
+                frame_path,
+                frame
+            )
 
-        return frame_path
+            frame_paths.append(
+                frame_path
+            )
+
+        frame_count += 1
 
     cap.release()
 
-    return None
+    return frame_paths
 # =========================================================
 #                    TABLES
 # =========================================================
@@ -732,95 +732,118 @@ def create_complaint():
 
         try:
 
-            if is_video:
+          if is_video:
 
-             frame_path = extract_frame(
-             image_path
-         )
+            frame_path = extract_frame(
+            image_path
+        )
+
+            results = model(
+            frame_path,
+            conf=0.35
+        )
+
+          else:
 
              results = model(
-             frame_path,
-             conf=0.35
-     )
+                 image_path,
+                 conf=0.35
+        )
 
-            else:
+          highest_conf = 0
 
-             results = model(
-             image_path,
-             conf=0.55
-    )
-            highest_conf = 0
+          for result in results:
 
-            for result in results:
+             for box in result.boxes:
 
-                for box in result.boxes:
+                 class_id = int(box.cls[0])
 
-                    class_id = int(box.cls[0])
+                 confidence = float(box.conf[0])
 
-                    confidence = float(box.conf[0])
+                 if confidence > highest_conf:
 
-                    if confidence > highest_conf:
+                   highest_conf = confidence
 
-                       highest_conf = confidence
+                   confidence_score = round(
+                     confidence,
+                     2
+                )
 
-                       confidence_score = round(confidence, 2)
+                   issue = CLASS_MAPPING.get(
+                      class_id,
+                      "Road Damage"
+                )
 
-                       issue = CLASS_MAPPING.get(
-                        class_id,
-                        "AI Uncertain"
-           )
+                   x1, y1, x2, y2 = box.xyxy[0]
+
+                   width = x2 - x1
+
+                   height = y2 - y1
+
+                   damage_area = width * height
+
+                   complaints_count = (
+                     Complaint.query.filter_by(
+                        road_name=road_name
+                    ).count()
+                )
+
+                   if complaints_count >= 5:
+
+                     repeated_damage = 1
+
+                   else:
+
+                    repeated_damage = 0
+
+                   severity = predict_severity(
+
+                     damage_area,
+
+                     complaints_count,
+
+                     repeated_damage
+
+                )
+
+    # FALLBACK FOR VIDEO
+
+          if highest_conf == 0 and is_video:
+
+            issue = "Road Damage"
+
+            severity = "MEDIUM"
+
+        except Exception as e:
+
+           print("AI ERROR:", e)
+
+           issue = "Road Damage"
+
+           severity = "LOW"
 
     # =========================================================
     # DAMAGE AREA CALCULATION
     # =========================================================
 
-                       x1, y1, x2, y2 = box.xyxy[0]
-
-                       width = x2 - x1
-
-                       height = y2 - y1
-
-                       damage_area = width * height
+                     
 
     # =========================================================
     # COMPLAINT HISTORY
     # =========================================================
 
-                       complaints_count = Complaint.query.filter_by(
-                          road_name=road_name
-                       ).count()
 
     # =========================================================
     # REPEATED DAMAGE CHECK
     # =========================================================
 
-                       if complaints_count >= 5:
-
-                          repeated_damage = 1
-
-                       else:
-
-                           repeated_damage = 0
-
+                      
     # =========================================================
     # HYBRID AI SEVERITY PREDICTION
     # =========================================================
 
-                       severity = predict_severity(
+                       
 
-                              damage_area,
-                              complaints_count,
-                              repeated_damage
-
-                         )
-
-        except Exception as e:
-
-            print("AI ERROR:", e)
-
-            issue = "AI Uncertain"
-
-            severity = "LOW"
 
     # =========================================================
     #                    STORE COMPLAINT
