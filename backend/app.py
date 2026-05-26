@@ -448,6 +448,7 @@ class RepairHistory(db.Model):
     )
 
     repaired_by = db.Column(db.String(100))
+    repair_type = db.Column(db.String(100))
 
     repair_date = db.Column(db.DateTime)
 
@@ -474,6 +475,45 @@ class AIPrediction(db.Model):
     predicted_severity = db.Column(db.String(20))
 
     processed_at = db.Column(
+        db.DateTime,
+        server_default=db.func.now()
+    )
+
+# -------------------- MAINTENANCE SCHEDULE TABLE --------------------
+
+class MaintenanceSchedule(db.Model):
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    complaint_id = db.Column(
+        db.Integer,
+        db.ForeignKey('complaint.id')
+    )
+
+    road_name = db.Column(
+        db.String(100)
+    )
+
+    maintenance_type = db.Column(
+        db.String(50)
+    )
+
+    scheduled_date = db.Column(
+        db.DateTime
+    )
+
+    status = db.Column(
+        db.String(20)
+    )
+
+    remarks = db.Column(
+        db.Text
+    )
+
+    created_at = db.Column(
         db.DateTime,
         server_default=db.func.now()
     )
@@ -1146,6 +1186,8 @@ def get_my_complaints():
 #              AUTHORITY COMPLAINTS API
 # =========================================================
 
+
+
 @app.route("/authority/complaints", methods=["GET"])
 @jwt_required()
 def authority_complaints():
@@ -1285,6 +1327,235 @@ def get_road_projects():
         })
 
     return jsonify(output)
+
+# =========================================================
+#              REPAIR HISTORY API
+# =========================================================
+
+@app.route(
+    "/repair-history/<int:complaint_id>",
+    methods=["GET"]
+)
+def get_repair_history(complaint_id):
+
+    repairs = RepairHistory.query.filter_by(
+        complaint_id=complaint_id
+    ).all()
+
+    output = []
+
+    for repair in repairs:
+
+        complaint = Complaint.query.get(
+            repair.complaint_id
+        )
+
+        output.append({
+
+            "id": repair.id,
+
+            "repair_date": repair.repair_date,
+
+            "repaired_by": repair.repaired_by,
+
+            "repair_type": repair.repair_type,
+
+            "road_type":
+                complaint.road_type
+                if complaint else None,
+
+            "remarks": repair.remarks,
+
+            "repair_cost": repair.repair_cost
+
+        })
+
+    return jsonify(output)
+
+# =========================================================
+#              MAINTENANCE API
+# =========================================================
+
+@app.route(
+    "/maintenance/<int:complaint_id>",
+    methods=["GET"]
+)
+def get_maintenance(complaint_id):
+
+    schedules = MaintenanceSchedule.query.filter_by(
+        complaint_id=complaint_id
+    ).all()
+
+    output = []
+
+    for schedule in schedules:
+
+        output.append({
+
+            "id": schedule.id,
+
+            "road_name": schedule.road_name,
+
+            "maintenance_type":
+                schedule.maintenance_type,
+
+            "scheduled_date":
+                schedule.scheduled_date,
+
+            "status":
+                schedule.status,
+
+            "remarks":
+                schedule.remarks
+
+        })
+
+    return jsonify(output)
+
+# =========================================================
+#              UPDATE STATUS API
+# =========================================================
+
+@app.route(
+    "/update-status/<int:complaint_id>",
+    methods=["PUT"]
+)
+@jwt_required()
+def update_status(complaint_id):
+
+    complaint = Complaint.query.get(
+        complaint_id
+    )
+
+    if not complaint:
+
+        return jsonify({
+            "message": "Complaint not found"
+        }), 404
+
+    data = request.json
+
+    complaint.status = data.get("status")
+
+    if complaint.status == "RESOLVED":
+
+        complaint.resolved_at = datetime.utcnow()
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Status updated successfully"
+    })
+
+
+# =========================================================
+#              ADD REPAIR API
+# =========================================================
+
+@app.route(
+    "/add-repair",
+    methods=["POST"]
+)
+def add_repair():
+
+    data = request.json
+
+    repair_date = data.get(
+        "repair_date"
+    )
+
+    parsed_date = None
+
+    if repair_date:
+
+        parsed_date = datetime.strptime(
+            repair_date,
+            "%Y-%m-%d"
+        )
+
+    repair = RepairHistory(
+
+        complaint_id=data.get(
+            "complaint_id"
+        ),
+
+        repaired_by=data.get(
+            "repaired_by"
+        ),
+
+        repair_type=data.get(
+            "repair_type"
+        ),
+
+        repair_date=parsed_date,
+
+        remarks=data.get(
+            "remarks"
+        ),
+
+        repair_cost=data.get(
+            "repair_cost"
+        )
+
+    )
+
+    db.session.add(repair)
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Repair added successfully"
+    })
+
+
+# =========================================================
+#           ADD MAINTENANCE API
+# =========================================================
+
+@app.route(
+    "/add-maintenance",
+    methods=["POST"]
+)
+def add_maintenance():
+
+    data = request.json
+
+    maintenance = MaintenanceSchedule(
+
+        complaint_id=data.get(
+            "complaint_id"
+        ),
+
+        road_name=data.get(
+            "road_name"
+        ),
+
+        maintenance_type=data.get(
+            "maintenance_type"
+        ),
+
+        scheduled_date=datetime.strptime(
+
+            data.get("scheduled_date"),
+
+            "%Y-%m-%d"
+
+        ),
+
+        status=data.get("status"),
+
+        remarks=data.get("remarks")
+
+    )
+
+    db.session.add(maintenance)
+
+    db.session.commit()
+
+    return jsonify({
+        "message":
+        "Maintenance scheduled successfully"
+    })
 
 # =========================================================
 #                    RUN APP

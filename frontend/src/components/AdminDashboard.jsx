@@ -23,10 +23,13 @@ const Dashboard = () => {
 
   };
 
-  // =================== STATES ===================
+  // ================= STATES =================
 
   const [complaintsData, setComplaintsData] =
     useState([]);
+
+  const [loading, setLoading] =
+    useState(true);
 
   const [zoneFilter, setZoneFilter] =
     useState("ALL");
@@ -37,7 +40,7 @@ const Dashboard = () => {
   const [statusFilter, setStatusFilter] =
     useState("ALL");
 
-  // =================== FETCH DATA ===================
+  // ================= FETCH =================
 
   useEffect(() => {
 
@@ -65,7 +68,7 @@ const Dashboard = () => {
             c.contractor_name || "Not Assigned",
 
           anomalies:
-            c.anomalies || [],  
+            c.anomalies || [],
 
           resolutionDays: 3,
 
@@ -73,37 +76,39 @@ const Dashboard = () => {
 
         setComplaintsData(formatted);
 
+        setLoading(false);
+
       })
 
       .catch((err) => {
 
         console.log(err);
 
+        setLoading(false);
+
       });
 
   }, []);
 
-  // =================== STATS ===================
+  // ================= LOADING =================
 
-  const stats = {
+  if (loading) {
 
-    total: complaintsData.length,
+    return (
 
-    active: complaintsData.filter(
-      (c) => c.status === "ACTIVE"
-    ).length,
+      <div style={pageStyle}>
 
-    resolved: complaintsData.filter(
-      (c) => c.status === "RESOLVED"
-    ).length,
+        <h2>
+          Loading analytics...
+        </h2>
 
-    highSeverity: complaintsData.filter(
-      (c) => c.severity === "HIGH"
-    ).length,
+      </div>
 
-  };
+    );
 
-  // =================== FILTERED DATA ===================
+  }
+
+  // ================= FILTERS =================
 
   const filteredComplaints =
     complaintsData.filter((c) => {
@@ -123,82 +128,111 @@ const Dashboard = () => {
 
     });
 
-  // =================== GRAPH DATA ===================
+  // ================= STATS =================
 
-const zoneCounts = {};
+  const stats = {
 
-complaintsData.forEach((c) => {
+    total: filteredComplaints.length,
 
-  if (zoneCounts[c.zone]) {
+    active: filteredComplaints.filter(
+      (c) => c.status === "ACTIVE"
+    ).length,
 
-    zoneCounts[c.zone]++;
+    resolved: filteredComplaints.filter(
+      (c) => c.status === "RESOLVED"
+    ).length,
 
-  } else {
+    highSeverity: filteredComplaints.filter(
+      (c) => c.severity === "HIGH"
+    ).length,
 
-    zoneCounts[c.zone] = 1;
+  };
 
-  }
+  // ================= ZONE GRAPH =================
 
-});
+  const zoneCounts = {};
 
-const zoneGraphData = Object.keys(
-  zoneCounts
-).map((zone) => ({
+  filteredComplaints.forEach((c) => {
 
-  zone,
+    if (zoneCounts[c.zone]) {
 
-  complaints: zoneCounts[zone],
+      zoneCounts[c.zone]++;
 
-}));
+    } else {
+
+      zoneCounts[c.zone] = 1;
+
+    }
+
+  });
+
+  const zoneGraphData =
+    Object.keys(zoneCounts).map((zone) => ({
+
+      zone,
+
+      complaints:
+        zoneCounts[zone],
+
+    }));
+
+  // ================= SEVERITY GRAPH =================
 
   const severityGraphData = [
 
     {
       name: "High",
+
       value:
-        complaintsData.filter(
-          (c) => c.severity === "HIGH"
+        filteredComplaints.filter(
+          (c) =>
+            c.severity === "HIGH"
         ).length,
     },
 
     {
       name: "Medium",
+
       value:
-        complaintsData.filter(
-          (c) => c.severity === "MEDIUM"
+        filteredComplaints.filter(
+          (c) =>
+            c.severity === "MEDIUM"
         ).length,
     },
 
     {
       name: "Low",
+
       value:
-        complaintsData.filter(
-          (c) => c.severity === "LOW"
+        filteredComplaints.filter(
+          (c) =>
+            c.severity === "LOW"
         ).length,
     },
 
   ];
 
   const pieColors = [
-    "#f44336",
-    "#ff9800",
-    "#4caf50",
+    "#ef4444",
+    "#f59e0b",
+    "#22c55e",
   ];
 
-  // =================== ANALYTICS ===================
+  // ================= ANALYTICS =================
 
   const avgResolution =
 
-    complaintsData.length > 0
+    filteredComplaints.length > 0
 
       ?
 
       (
-        complaintsData.reduce(
+        filteredComplaints.reduce(
           (sum, c) =>
             sum + c.resolutionDays,
           0
-        ) / complaintsData.length
+        ) /
+        filteredComplaints.length
       ).toFixed(1)
 
       :
@@ -207,25 +241,30 @@ const zoneGraphData = Object.keys(
 
   const pendingZone =
 
-  zoneGraphData.length > 0
+    zoneGraphData.length > 0
 
-    ?
+      ?
 
-    zoneGraphData.reduce((max, z) =>
+      zoneGraphData.reduce(
+        (max, z) =>
 
-      z.complaints > max.complaints
-        ? z
-        : max
+          z.complaints >
+          max.complaints
 
-    ).zone
+            ?
 
-    :
+            z
 
-    "No Data";
+            :
 
-  
+            max
+      ).zone
 
-  // =================== UI ===================
+      :
+
+      "No Data";
+
+  // ================= UI =================
 
   return (
 
@@ -233,15 +272,7 @@ const zoneGraphData = Object.keys(
 
       {/* HEADER */}
 
-      <div
-        style={{
-          ...headerStyle,
-          display: "flex",
-          justifyContent:
-            "space-between",
-          alignItems: "center",
-        }}
-      >
+      <div style={headerStyle}>
 
         <div>
 
@@ -251,6 +282,10 @@ const zoneGraphData = Object.keys(
 
           <p style={subtitleStyle}>
             Smart Road Complaint Monitoring System
+          </p>
+
+          <p style={dateStyle}>
+            {new Date().toLocaleString()}
           </p>
 
         </div>
@@ -264,7 +299,7 @@ const zoneGraphData = Object.keys(
 
       </div>
 
-      {/* STATS */}
+      {/* KPI CARDS */}
 
       <div style={cardGrid}>
 
@@ -272,12 +307,12 @@ const zoneGraphData = Object.keys(
           style={{
             ...cardStyle,
             borderLeft:
-              "6px solid #2196F3",
+              "6px solid #3b82f6",
           }}
         >
 
           <h3 style={cardTitle}>
-            Total Complaints
+            📍 Total Complaints
           </h3>
 
           <p style={cardValue}>
@@ -290,12 +325,12 @@ const zoneGraphData = Object.keys(
           style={{
             ...cardStyle,
             borderLeft:
-              "6px solid #FF9800",
+              "6px solid #f59e0b",
           }}
         >
 
           <h3 style={cardTitle}>
-            Active Complaints
+            ⚠️ Active Complaints
           </h3>
 
           <p style={cardValue}>
@@ -308,12 +343,12 @@ const zoneGraphData = Object.keys(
           style={{
             ...cardStyle,
             borderLeft:
-              "6px solid #4CAF50",
+              "6px solid #22c55e",
           }}
         >
 
           <h3 style={cardTitle}>
-            Resolved Complaints
+            ✅ Resolved Complaints
           </h3>
 
           <p style={cardValue}>
@@ -326,12 +361,12 @@ const zoneGraphData = Object.keys(
           style={{
             ...cardStyle,
             borderLeft:
-              "6px solid #F44336",
+              "6px solid #ef4444",
           }}
         >
 
           <h3 style={cardTitle}>
-            High Severity
+            🚨 High Severity
           </h3>
 
           <p style={cardValue}>
@@ -342,12 +377,42 @@ const zoneGraphData = Object.keys(
 
       </div>
 
+      {/* CITY MAP */}
+
+      <div style={sectionCard}>
+
+        <h2 style={sectionTitle}>
+          🗺️ City Monitoring Map
+        </h2>
+
+        <div
+          style={{
+            height: "55vh",
+            borderRadius: "18px",
+            overflow: "hidden",
+          }}
+        >
+
+          <iframe
+            title="roadwatch-map"
+            src="http://localhost:3000/map"
+            width="100%"
+            height="100%"
+            style={{
+              border: "none",
+            }}
+          />
+
+        </div>
+
+      </div>
+
       {/* ANALYTICS */}
 
       <div style={sectionCard}>
 
         <h2 style={sectionTitle}>
-          🏢 Authority Analytics
+          📊 Authority Analytics
         </h2>
 
         <div style={authorityGrid}>
@@ -363,8 +428,6 @@ const zoneGraphData = Object.keys(
             </p>
 
           </div>
-
-          
 
           <div style={authorityCard}>
 
@@ -382,19 +445,57 @@ const zoneGraphData = Object.keys(
 
       </div>
 
-      {/* GRAPHS */}
+      {/* CONTRACTOR PERFORMANCE */}
+
+      <div style={sectionCard}>
+
+        <h2 style={sectionTitle}>
+          🏆 Contractor Performance
+        </h2>
+
+        <div style={authorityGrid}>
+
+          <div style={authorityCard}>
+
+            <h3 style={smallTitle}>
+              Best Contractor
+            </h3>
+
+            <p style={bigValue}>
+              Techno Roads Pvt Ltd
+            </p>
+
+          </div>
+
+          <div style={authorityCard}>
+
+            <h3 style={smallTitle}>
+              Most Delayed Contractor
+            </h3>
+
+            <p style={bigValue}>
+              Metro Infra
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* CHARTS */}
 
       <div style={graphGrid}>
 
         <div style={graphCard}>
 
           <h2 style={sectionTitle}>
-            📍 Complaints per Zone
+            📍 Complaints per Authority
           </h2>
 
           <ResponsiveContainer
             width="100%"
-            height={280}
+            height={300}
           >
 
             <BarChart
@@ -409,7 +510,7 @@ const zoneGraphData = Object.keys(
 
               <Bar
                 dataKey="complaints"
-                fill="#2196F3"
+                fill="#3b82f6"
                 radius={[8, 8, 0, 0]}
               />
 
@@ -427,7 +528,7 @@ const zoneGraphData = Object.keys(
 
           <ResponsiveContainer
             width="100%"
-            height={280}
+            height={300}
           >
 
             <PieChart>
@@ -436,8 +537,6 @@ const zoneGraphData = Object.keys(
                 data={severityGraphData}
                 dataKey="value"
                 nameKey="name"
-                cx="50%"
-                cy="50%"
                 outerRadius={90}
                 label
               >
@@ -492,7 +591,7 @@ const zoneGraphData = Object.keys(
           >
 
             <option value="ALL">
-              All Zones
+              All Authorities
             </option>
 
             <option value="Zone 1">
@@ -559,6 +658,10 @@ const zoneGraphData = Object.keys(
               ACTIVE
             </option>
 
+            <option value="IN_PROGRESS">
+              IN_PROGRESS
+            </option>
+
             <option value="RESOLVED">
               RESOLVED
             </option>
@@ -569,213 +672,286 @@ const zoneGraphData = Object.keys(
 
         {/* TABLE */}
 
-        <table style={tableStyle}>
-
-          <thead>
-
-            <tr style={tableHeader}>
-
-              <th style={thStyle}>
-                ID
-              </th>
-
-              <th style={thStyle}>
-                Road
-              </th>
-
-              <th style={thStyle}>
-                Zone
-              </th>
-
-              <th style={thStyle}>
-                Issue
-              </th>
-
-              <th style={thStyle}>
-                Severity
-              </th>
-
-              <th style={thStyle}>
-                Status
-              </th>
-
-              <th style={thStyle}>
-                Contractor
-              </th>
-
-              <th style={thStyle}>
-                 AI Alerts
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {filteredComplaints.map(
-              (row) => (
-
-                <tr
-                  key={row.id}
-                  style={tableRow}
-                >
-
-                  <td style={tdStyle}>
-                    {row.id}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {row.road}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {row.zone}
-                  </td>
-
-                  <td style={tdStyle}>
-                    {row.issue}
-                  </td>
-
-                  <td style={tdStyle}>
-
-                    <span
-                      style={{
-                        ...tagStyle,
-
-                        background:
-
-                          row.severity ===
-                          "HIGH"
-
-                            ?
-
-                            "#f44336"
-
-                            :
-
-                            row.severity ===
-                            "MEDIUM"
-
-                            ?
-
-                            "#ff9800"
-
-                            :
-
-                            "#4caf50",
-                      }}
-                    >
-
-                      {row.severity}
-
-                    </span>
-
-                  </td>
-
-                  <td style={tdStyle}>
-
-                    <span
-                      style={{
-                        ...tagStyle,
-
-                        background:
-
-                          row.status ===
-                          "ACTIVE"
-
-                            ?
-
-                            "#2196F3"
-
-                            :
-
-                            "#4caf50",
-                      }}
-                    >
-
-                      {row.status}
-
-                    </span>
-
-                  </td>
-
-                  <td style={tdStyle}>
-                    {row.contractor}
-                  </td>
-
-                  <td style={tdStyle}>
-
-  {
-
-    row.anomalies.length > 0 ? (
-
-      <details>
-
-        <summary
-          style={insightBtn}
-        >
-
-          View Alerts
-
-        </summary>
-
         <div
           style={{
-            marginTop: "10px",
+            overflowX: "auto",
           }}
         >
 
-          {
+          <table style={tableStyle}>
 
-            row.anomalies.map(
-              (alert, index) => (
+            <thead>
 
-                <div
-                  key={index}
-                  style={anomalyStyle}
-                >
+              <tr style={tableHeader}>
 
-                  ⚠️ {alert}
+                <th style={thStyle}>
+                  ID
+                </th>
 
-                </div>
+                <th style={thStyle}>
+                  Road
+                </th>
 
-              )
-            )
+                <th style={thStyle}>
+                  Zone
+                </th>
 
-          }
+                <th style={thStyle}>
+                  Issue
+                </th>
+
+                <th style={thStyle}>
+                  Severity
+                </th>
+
+                <th style={thStyle}>
+                  Status
+                </th>
+
+                <th style={thStyle}>
+                  Contractor
+                </th>
+
+                <th style={thStyle}>
+                  AI Insights
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              {filteredComplaints.map(
+                (row) => (
+
+                  <tr
+                    key={row.id}
+                    style={tableRow}
+                  >
+
+                    <td style={tdStyle}>
+                      {row.id}
+                    </td>
+
+                    <td style={tdStyle}>
+                      {row.road}
+                    </td>
+
+                    <td style={tdStyle}>
+                      {row.zone}
+                    </td>
+
+                    <td style={tdStyle}>
+                      {row.issue}
+                    </td>
+
+                    <td style={tdStyle}>
+
+                      <span
+                        style={{
+                          ...tagStyle,
+
+                          background:
+                            row.severity ===
+                            "HIGH"
+
+                              ?
+
+                              "#ef4444"
+
+                              :
+
+                              row.severity ===
+                              "MEDIUM"
+
+                              ?
+
+                              "#f59e0b"
+
+                              :
+
+                              "#22c55e",
+                        }}
+                      >
+
+                        {row.severity}
+
+                      </span>
+
+                    </td>
+
+                    <td style={tdStyle}>
+
+                      <span
+                        style={{
+                          ...tagStyle,
+
+                          background:
+                            row.status ===
+                            "ACTIVE"
+
+                              ?
+
+                              "#3b82f6"
+
+                              :
+
+                              row.status ===
+                              "IN_PROGRESS"
+
+                              ?
+
+                              "#7c3aed"
+
+                              :
+
+                              "#22c55e",
+                        }}
+                      >
+
+                        {row.status}
+
+                      </span>
+
+                    </td>
+
+                    <td style={tdStyle}>
+                      {row.contractor}
+                    </td>
+
+                    <td style={tdStyle}>
+
+                      {
+
+                        row.anomalies
+                          .length > 0 ? (
+
+                          <details>
+
+                            <summary
+                              style={
+                                insightBtn
+                              }
+                            >
+
+                              🤖 AI Insights
+
+                            </summary>
+
+                            <div
+                              style={{
+                                marginTop:
+                                  "10px",
+                              }}
+                            >
+
+                              {
+
+                                row.anomalies.map(
+                                  (
+                                    alert,
+                                    index
+                                  ) => (
+
+                                    <div
+                                      key={
+                                        index
+                                      }
+
+                                      style={
+                                        anomalyStyle
+                                      }
+                                    >
+
+                                      ⚠️{" "}
+                                      {alert}
+
+                                    </div>
+
+                                  )
+                                )
+
+                              }
+
+                            </div>
+
+                          </details>
+
+                        ) : (
+
+                          <span
+                            style={{
+                              color:
+                                "#64748b",
+                            }}
+                          >
+
+                            No Alerts
+
+                          </span>
+
+                        )
+
+                      }
+
+                    </td>
+
+                  </tr>
+
+                )
+              )}
+
+              {
+
+                filteredComplaints.length ===
+                  0 && (
+
+                  <tr>
+                    onMouseEnter={(e) =>
+  e.currentTarget.style.background =
+    "#f8fafc"
+}
+
+onMouseLeave={(e) =>
+  e.currentTarget.style.background =
+    "white"
+}
+                    <td
+                      colSpan="8"
+
+                      style={{
+                        padding:
+                          "30px",
+
+                        textAlign:
+                          "center",
+
+                        color:
+                          "#64748b",
+
+                        fontWeight:
+                          "600",
+                      }}
+                    >
+
+                      ✅ No complaints
+                      found for selected
+                      filters
+
+                    </td>
+
+                  </tr>
+
+                )
+
+              }
+
+            </tbody>
+
+          </table>
 
         </div>
-
-      </details>
-
-    ) : (
-
-      <span
-        style={{
-          color: "#64748b",
-          fontWeight: "500",
-        }}
-      >
-
-        No Alerts
-
-      </span>
-
-    )
-
-  }
-
-</td>
-
-                </tr>
-
-              )
-            )}
-
-          </tbody>
-
-        </table>
 
       </div>
 
@@ -787,7 +963,7 @@ const zoneGraphData = Object.keys(
 
 export default Dashboard;
 
-// =================== STYLES ===================
+// ================= STYLES =================
 
 const pageStyle = {
   padding: "25px",
@@ -799,25 +975,38 @@ const pageStyle = {
 
 const headerStyle = {
   marginBottom: "25px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  background:
+    "linear-gradient(to right, #dbeafe, #ffffff)",
+  padding: "25px",
+  borderRadius: "18px",
 };
 
 const titleStyle = {
   fontSize: "34px",
   fontWeight: "bold",
-  color: "#222",
+  color: "#111827",
 };
 
 const subtitleStyle = {
   marginTop: "5px",
   fontSize: "16px",
-  color: "#666",
+  color: "#64748b",
+};
+
+const dateStyle = {
+  marginTop: "8px",
+  color: "#475569",
+  fontWeight: "600",
 };
 
 const logoutBtn = {
-  padding: "10px 18px",
+  padding: "12px 18px",
   border: "none",
-  borderRadius: "10px",
-  background: "#f44336",
+  borderRadius: "12px",
+  background: "#ef4444",
   color: "white",
   fontWeight: "bold",
   cursor: "pointer",
@@ -833,39 +1022,66 @@ const cardGrid = {
 
 const cardStyle = {
   background: "white",
-  padding: "20px",
-  borderRadius: "16px",
+  padding: "22px",
+  borderRadius: "18px",
   boxShadow:
-    "0px 4px 12px rgba(0,0,0,0.15)",
+    "0px 4px 16px rgba(0,0,0,0.12)",
+  transition: "0.2s ease",
+  cursor: "pointer",
 };
 
 const cardTitle = {
   fontSize: "16px",
-  color: "#666",
+  color: "#64748b",
   marginBottom: "10px",
 };
 
 const cardValue = {
-  fontSize: "30px",
+  fontSize: "34px",
   fontWeight: "bold",
-  color: "#222",
+  color: "#111827",
 };
 
 const sectionCard = {
   background: "white",
-  padding: "20px",
-  borderRadius: "16px",
+  padding: "24px",
+  borderRadius: "18px",
   boxShadow:
-    "0px 4px 12px rgba(0,0,0,0.15)",
+    "0px 4px 16px rgba(0,0,0,0.12)",
   marginBottom: "30px",
-  overflowX: "auto",
 };
 
 const sectionTitle = {
-  fontSize: "20px",
+  fontSize: "22px",
   fontWeight: "bold",
-  marginBottom: "15px",
-  color: "#222",
+  marginBottom: "18px",
+  color: "#111827",
+};
+
+const authorityGrid = {
+  display: "grid",
+  gridTemplateColumns:
+    "repeat(auto-fit, minmax(250px, 1fr))",
+  gap: "20px",
+};
+
+const authorityCard = {
+  padding: "20px",
+  borderRadius: "16px",
+  background: "#f8fafc",
+  border: "1px solid #e2e8f0",
+};
+
+const smallTitle = {
+  fontSize: "15px",
+  color: "#64748b",
+};
+
+const bigValue = {
+  fontSize: "24px",
+  fontWeight: "bold",
+  color: "#111827",
+  marginTop: "8px",
 };
 
 const graphGrid = {
@@ -878,122 +1094,84 @@ const graphGrid = {
 
 const graphCard = {
   background: "white",
-  padding: "20px",
-  borderRadius: "16px",
+  padding: "24px",
+  borderRadius: "18px",
   boxShadow:
-    "0px 4px 12px rgba(0,0,0,0.15)",
-};
-
-const authorityGrid = {
-  display: "grid",
-  gridTemplateColumns:
-    "repeat(auto-fit, minmax(250px, 1fr))",
-  gap: "15px",
-};
-
-const authorityCard = {
-  padding: "15px",
-  borderRadius: "14px",
-  background: "#f5f7ff",
-  border: "1px solid #ddd",
-};
-
-const smallTitle = {
-  fontSize: "15px",
-  color: "#555",
-};
-
-const bigValue = {
-  fontSize: "22px",
-  fontWeight: "bold",
-  color: "#222",
-  marginTop: "8px",
-};
-
-const tableStyle = {
-  width: "100%",
-  borderCollapse: "collapse",
-};
-
-const tableHeader = {
-  background: "#2196F3",
-  color: "white",
-};
-
-const thStyle = {
-  padding: "12px",
-  textAlign: "left",
-};
-
-const tableRow = {
-  borderBottom: "1px solid #ddd",
-};
-
-const tdStyle = {
-  padding: "12px",
-  color: "#333",
-};
-
-const tagStyle = {
-  padding: "6px 12px",
-  borderRadius: "12px",
-  color: "white",
-  fontSize: "14px",
-  fontWeight: "bold",
+    "0px 4px 16px rgba(0,0,0,0.12)",
 };
 
 const filterBar = {
   display: "flex",
   gap: "15px",
-  marginBottom: "15px",
+  marginBottom: "20px",
   flexWrap: "wrap",
 };
 
 const filterSelect = {
-  padding: "10px",
-  borderRadius: "10px",
-  border: "1px solid #ccc",
+  padding: "12px",
+  borderRadius: "12px",
+  border: "1px solid #cbd5e1",
   outline: "none",
 };
 
-const insightBtn = {
+const tableStyle = {
+  width: "100%",
+  borderCollapse: "separate",
+  borderSpacing: "0 10px",
+};
 
-  background: "#1e3a8a",
-
+const tableHeader = {
+  background: "#3b82f6",
   color: "white",
+};
 
-  padding: "8px 14px",
+const thStyle = {
+  padding: "14px",
+  textAlign: "left",
+  position: "sticky",
+top: 0,
+zIndex: 10,
+};
 
-  borderRadius: "10px",
+const tableRow = {
+  background: "white",
+  boxShadow:
+    "0px 2px 8px rgba(0,0,0,0.05)",
+};
 
-  cursor: "pointer",
+const tdStyle = {
+  padding: "14px",
+};
 
+const tagStyle = {
+  padding: "7px 14px",
+  borderRadius: "14px",
+  color: "white",
   fontSize: "13px",
+  fontWeight: "bold",
+  boxShadow:
+    "0px 2px 6px rgba(0,0,0,0.15)",
+};
 
+const insightBtn = {
+  background:
+    "linear-gradient(to right, #2563eb, #1d4ed8)",
+  color: "white",
+  padding: "10px 14px",
+  borderRadius: "12px",
+  cursor: "pointer",
+  fontSize: "13px",
   fontWeight: "600",
-
   width: "fit-content",
-
-  userSelect: "none",
 };
 
 const anomalyStyle = {
-
   background: "#fff7ed",
-
   color: "#c2410c",
-
   border: "1px solid #fdba74",
-
-  padding: "8px 12px",
-
+  padding: "10px 12px",
   borderRadius: "10px",
-
   fontSize: "12px",
-
   fontWeight: "600",
-
-  marginBottom: "6px",
-
-  width: "fit-content",
+  marginBottom: "8px",
 };

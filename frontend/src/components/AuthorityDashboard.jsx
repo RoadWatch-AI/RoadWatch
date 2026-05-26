@@ -5,6 +5,49 @@ const AuthorityDashboard = () => {
   const [complaints, setComplaints] =
     useState([]);
 
+  const [openDropdown, setOpenDropdown] =
+  useState(null);
+
+const [openRepairForm, setOpenRepairForm] =
+  useState(null);
+
+const [repairData, setRepairData] =
+  useState({
+
+    contractor: "",
+
+    repairType: "",
+
+    repairDate: "",
+
+    repairCost: "",
+
+    remarks: "",
+
+  });
+
+  const [repairAdded, setRepairAdded] =
+  useState({});
+
+const [openMaintenanceForm, setOpenMaintenanceForm] =
+  useState(null);
+
+const [maintenanceData, setMaintenanceData] =
+  useState({
+
+    maintenanceType: "",
+
+    scheduledDate: "",
+
+    status: "PLANNED",
+
+    remarks: "",
+
+  });
+
+const [maintenanceHistory, setMaintenanceHistory] =
+  useState({});
+
   // ================= LOGOUT =================
 
   const handleLogout = () => {
@@ -231,6 +274,54 @@ fetch(
         )
 
       );
+
+// ================= FETCH MAINTENANCE =================
+
+const fetchMaintenance = async (
+  complaintId
+) => {
+
+  try {
+
+    const token =
+    localStorage.getItem("token");
+
+const response =
+  await fetch(
+
+    `http://127.0.0.1:5000/maintenance/${complaintId}`,
+
+    {
+
+      headers: {
+
+        Authorization:
+          `Bearer ${token}`
+
+      }
+
+    }
+
+  );
+
+    const data =
+      await response.json();
+
+    setMaintenanceHistory((prev) => ({
+
+      ...prev,
+
+      [complaintId]: data,
+
+    }));
+
+  } catch (err) {
+
+    console.log(err);
+
+  }
+
+};
 
   // ================= UI =================
 
@@ -630,55 +721,756 @@ fetch(
 
 <td style={tdStyle}>
 
-  {/* STATUS UPDATE */}
-
-  <select
+  <div
     style={{
-      padding: "8px",
-      borderRadius: "8px",
-      marginBottom: "10px",
-      width: "100%",
+      display: "flex",
+      alignItems: "flex-start",
+      gap: "10px",
+      position: "relative",
     }}
-    defaultValue={c.status}
   >
 
-    <option value="ACTIVE">
-      ACTIVE
-    </option>
+    {/* UPDATE SECTION */}
 
-    <option value="IN_PROGRESS">
-      IN_PROGRESS
-    </option>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
 
-    <option value="RESOLVED">
-      RESOLVED
-    </option>
+      <button
 
-  </select>
+        style={{
+          ...actionBtn,
+          background: "#2563eb",
+        }}
 
-  {/* REPAIR HISTORY */}
+        onClick={() => {
+
+          if (openDropdown === c.id) {
+
+            setOpenDropdown(null);
+
+          } else {
+
+            setOpenDropdown(c.id);
+
+          }
+
+        }}
+      >
+
+        Update Status
+
+      </button>
+
+      {
+
+        openDropdown === c.id && (
+
+          <select
+
+            style={{
+              padding: "10px",
+              borderRadius: "8px",
+              width: "130px",
+              marginTop: "6px",
+              border: "1px solid #cbd5e1",
+              fontWeight: "600",
+            }}
+
+            defaultValue={c.status}
+
+            onChange={async (e) => {
+
+              const token =
+                localStorage.getItem("token");
+
+              const newStatus =
+                e.target.value;
+
+              try {
+
+                const response = await fetch(
+
+                  `http://127.0.0.1:5000/update-status/${c.id}`,
+
+                  {
+
+                    method: "PUT",
+
+                    headers: {
+
+                      "Content-Type":
+                        "application/json",
+
+                      Authorization:
+                        `Bearer ${token}`
+
+                    },
+
+                    body: JSON.stringify({
+
+                      status: newStatus
+
+                    })
+
+                  }
+
+                );
+
+                const data =
+                  await response.json();
+
+                alert(data.message);
+
+                window.location.reload();
+
+              } catch (err) {
+
+                console.log(err);
+
+              }
+
+            }}
+          >
+
+            <option value="ACTIVE">
+              ACTIVE
+            </option>
+
+            <option value="IN_PROGRESS">
+              IN_PROGRESS
+            </option>
+
+            <option value="RESOLVED">
+              RESOLVED
+            </option>
+
+          </select>
+
+        )
+
+      }
+
+    </div>
+
+{/* ADD REPAIR */}
+
+<div>
+
+{
+
+  c.status === "RESOLVED" ||
+
+repairAdded[c.id] ? (
+
+    <button
+
+      disabled
+
+      style={{
+        ...actionBtn,
+        background: "#16a34a",
+        cursor: "default",
+      }}
+
+    >
+
+      Repair Added ✅
+
+    </button>
+
+  ) : (
+
+    <button
+
+      style={actionBtn}
+
+      onClick={() => {
+
+        if (openRepairForm === c.id) {
+
+          setOpenRepairForm(null);
+
+        } else {
+
+          setOpenRepairForm(c.id);
+
+        }
+
+      }}
+    >
+
+      Add Repair
+
+    </button>
+
+  )
+
+}  
+
+ {
+
+  openRepairForm === c.id &&
+
+  !repairAdded[c.id] && (
+
+      <div
+        style={{
+          marginTop: "12px",
+          padding: "15px",
+          background: "#f8fafc",
+          borderRadius: "12px",
+          border: "1px solid #cbd5e1",
+          width: "280px",
+        }}
+      >
+
+        <input
+          type="text"
+          placeholder="Contractor"
+          style={repairInput}
+          value={repairData.contractor}
+          onChange={(e) =>
+            setRepairData({
+
+              ...repairData,
+
+              contractor:
+                e.target.value,
+
+            })
+          }
+        />
+
+        <select
+
+  style={repairInput}
+
+  value={repairData.repairType}
+
+  onChange={(e) =>
+    setRepairData({
+
+      ...repairData,
+
+      repairType:
+        e.target.value,
+
+    })
+  }
+
+>
+
+  <option value="">
+    Select Repair Type
+  </option>
+
+  <option value="Pothole Filling">
+    Pothole Filling
+  </option>
+
+  <option value="Road Resurfacing">
+    Road Resurfacing
+  </option>
+
+  <option value="Crack Sealing">
+    Crack Sealing
+  </option>
+
+  <option value="Temporary Patch">
+    Temporary Patch
+  </option>
+
+  <option value="Full Reconstruction">
+    Full Reconstruction
+  </option>
+
+</select>
+
+        <input
+          type="date"
+          style={repairInput}
+          value={repairData.repairDate}
+          onChange={(e) =>
+            setRepairData({
+
+              ...repairData,
+
+              repairDate:
+                e.target.value,
+
+            })
+          }
+        />
+
+        <input
+          type="number"
+          placeholder="Repair Cost"
+          style={repairInput}
+          value={repairData.repairCost}
+          onChange={(e) =>
+            setRepairData({
+
+              ...repairData,
+
+              repairCost:
+                e.target.value,
+
+            })
+          }
+        />
+
+        <textarea
+          placeholder="Remarks"
+          style={{
+            ...repairInput,
+            height: "70px",
+          }}
+          value={repairData.remarks}
+          onChange={(e) =>
+            setRepairData({
+
+              ...repairData,
+
+              remarks:
+                e.target.value,
+
+            })
+          }
+        />
+
+        <button
+
+          style={{
+            ...actionBtn,
+            width: "100%",
+            marginTop: "10px",
+          }}
+
+          onClick={async () => {
+
+            try {
+
+              const token =
+                 localStorage.getItem("token");
+
+              const response =
+                await fetch(
+
+                  "http://127.0.0.1:5000/add-repair",
+
+                  {
+
+                    method: "POST",
+
+                    headers: {
+
+  "Content-Type":
+    "application/json",
+
+  Authorization:
+    `Bearer ${token}`
+
+},
+
+                    body: JSON.stringify({
+
+                      complaint_id: c.id,
+
+                      repaired_by:
+                        repairData.contractor,
+
+                      repair_type:
+                        repairData.repairType,
+
+                      repair_date:
+                        repairData.repairDate,
+
+                      repair_cost:
+                        repairData.repairCost,
+
+                      remarks:
+                        repairData.remarks
+
+                    })
+
+                  }
+
+                );
+
+              const data =
+                await response.json();
+
+              alert(data.message);
+
+setRepairAdded((prev) => ({
+
+  ...prev,
+
+  [c.id]: true,
+
+}));
+
+setOpenRepairForm(null);
+            } catch (err) {
+
+              console.log(err);
+
+            }
+
+          }}
+        >
+
+          Submit Repair
+
+        </button>
+
+      </div>
+
+    )
+
+  }
+
+</div>
+
+{
+  c.anomalies?.length > 0 &&
+
+  c.status !== "RESOLVED" && (
+
+<div>
+
+{/* MAINTENANCE */}
 
   <button
-    style={actionBtn}
-  >
 
-    Add Repair
-
-  </button>
-
-  {/* MAINTENANCE */}
-
-  <button
     style={{
       ...actionBtn,
-      background: "#0f766e",
-      marginTop: "8px",
+      background: "#7c3aed",
+    }}
+
+    onClick={() => {
+
+      if (
+        openMaintenanceForm === c.id
+      ) {
+
+        setOpenMaintenanceForm(null);
+
+      } else {
+
+        setOpenMaintenanceForm(c.id);
+
+        fetchMaintenance(c.id);
+
+      }
+
     }}
   >
 
-    Schedule Maintenance
+    Maintenance
 
   </button>
+
+  {
+
+    openMaintenanceForm === c.id && (
+
+      <div
+        style={{
+          marginTop: "12px",
+          padding: "15px",
+          background: "#f8fafc",
+          borderRadius: "12px",
+          border: "1px solid #cbd5e1",
+          width: "320px",
+        }}
+      >
+
+        <select
+
+          style={repairInput}
+
+          value={
+            maintenanceData.maintenanceType
+          }
+
+          onChange={(e) =>
+            setMaintenanceData({
+
+              ...maintenanceData,
+
+              maintenanceType:
+                e.target.value,
+
+            })
+          }
+        >
+
+          <option value="">
+            Select Maintenance
+          </option>
+
+          <option value="Inspection">
+            Inspection
+          </option>
+
+          <option value="Pothole Repair">
+            Pothole Repair
+          </option>
+
+          <option value="Crack Sealing">
+            Crack Sealing
+          </option>
+
+          <option value="Road Relaying">
+            Road Relaying
+          </option>
+
+        </select>
+
+        <input
+          type="date"
+          style={repairInput}
+          value={
+            maintenanceData.scheduledDate
+          }
+          onChange={(e) =>
+            setMaintenanceData({
+
+              ...maintenanceData,
+
+              scheduledDate:
+                e.target.value,
+
+            })
+          }
+        />
+
+        <select
+
+          style={repairInput}
+
+          value={
+            maintenanceData.status
+          }
+
+          onChange={(e) =>
+            setMaintenanceData({
+
+              ...maintenanceData,
+
+              status:
+                e.target.value,
+
+            })
+          }
+        >
+
+          <option value="PLANNED">
+            PLANNED
+          </option>
+
+          <option value="PENDING">
+            PENDING
+          </option>
+
+          <option value="COMPLETED">
+            COMPLETED
+          </option>
+
+        </select>
+
+        <textarea
+
+          placeholder="Remarks"
+
+          style={{
+            ...repairInput,
+            height: "70px",
+          }}
+
+          value={
+            maintenanceData.remarks
+          }
+
+          onChange={(e) =>
+            setMaintenanceData({
+
+              ...maintenanceData,
+
+              remarks:
+                e.target.value,
+
+            })
+          }
+        />
+
+        <button
+
+          style={{
+            ...actionBtn,
+            width: "100%",
+            marginTop: "10px",
+            background: "#7c3aed",
+          }}
+
+          onClick={async () => {
+
+            try {
+
+              const token =
+               localStorage.getItem("token");
+
+              const response =
+                await fetch(
+
+                  "http://127.0.0.1:5000/add-maintenance",
+
+                  {
+
+                    method: "POST",
+
+                    headers: {
+
+  "Content-Type":
+    "application/json",
+
+  Authorization:
+    `Bearer ${token}`
+
+},
+                    body: JSON.stringify({
+
+                      complaint_id: c.id,
+
+                      road_name:
+                        c.road_name,
+
+                      maintenance_type:
+                        maintenanceData.maintenanceType,
+
+                      scheduled_date:
+                        maintenanceData.scheduledDate,
+
+                      status:
+                        maintenanceData.status,
+
+                      remarks:
+                        maintenanceData.remarks
+
+                    })
+
+                  }
+
+                );
+
+              const data =
+                await response.json();
+
+              alert(data.message);
+
+              fetchMaintenance(c.id);
+
+            } catch (err) {
+
+              console.log(err);
+
+            }
+
+          }}
+        >
+
+          Schedule Maintenance
+
+        </button>
+
+        {/* HISTORY */}
+
+        {
+
+          maintenanceHistory[c.id]
+            ?.length > 0 && (
+
+            <div
+              style={{
+                marginTop: "15px",
+              }}
+            >
+
+              <h4>
+                Maintenance History
+              </h4>
+
+              {
+
+                maintenanceHistory[
+                  c.id
+                ].map((m) => (
+
+                  <div
+                    key={m.id}
+                    style={maintenanceCard}
+                  >
+
+                    <p>
+                      <b>Type:</b>
+                      {" "}
+                      {m.maintenance_type}
+                    </p>
+
+                    <p>
+                      <b>Date:</b>
+                      {" "}
+                      {
+
+                        new Date(
+                          m.scheduled_date
+                        ).toLocaleDateString()
+
+                      }
+                    </p>
+
+                    <p>
+                      <b>Status:</b>
+                      {" "}
+                      {m.status}
+                    </p>
+
+                    <p>
+                      <b>Remarks:</b>
+                      {" "}
+                      {m.remarks}
+                    </p>
+
+                  </div>
+
+                ))
+
+              }
+
+            </div>
+
+          )
+
+        }
+
+      </div>
+
+    )
+
+  }
+
+</div>
+
+)
+
+}
+
+  </div>
 
 </td>
 
@@ -894,7 +1686,7 @@ const anomalyStyle = {
 
 const actionBtn = {
 
-  width: "100%",
+  width: "130px",
 
   padding: "8px 12px",
 
@@ -909,6 +1701,40 @@ const actionBtn = {
   fontWeight: "600",
 
   cursor: "pointer",
+
+  fontSize: "13px",
+
+  marginRight: "8px",
+
+};
+
+const repairInput = {
+
+  width: "100%",
+
+  padding: "10px",
+
+  marginBottom: "10px",
+
+  borderRadius: "8px",
+
+  border: "1px solid #cbd5e1",
+
+  fontSize: "14px",
+
+};
+
+const maintenanceCard = {
+
+  background: "white",
+
+  border: "1px solid #e2e8f0",
+
+  borderRadius: "10px",
+
+  padding: "10px",
+
+  marginTop: "10px",
 
   fontSize: "13px",
 

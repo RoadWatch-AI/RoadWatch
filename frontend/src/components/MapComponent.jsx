@@ -15,7 +15,6 @@ import { useLocation } from "react-router-dom";
 import L from "leaflet";
 
 import "leaflet/dist/leaflet.css";
-import "leaflet-geosearch/dist/geosearch.css";
 
 import ComplaintForm from "./ComplaintForm";
 
@@ -173,6 +172,51 @@ function TransparencyPanel({
 
   const [activeTab, setActiveTab] =
     useState("details");
+
+  const [repairHistory, setRepairHistory] =
+  useState([]);
+
+  const [maintenanceData, setMaintenanceData] =
+  useState([]);
+
+  useEffect(() => {
+
+  if (!selectedRoad) return;
+
+  // ---------------- REPAIR HISTORY ----------------
+
+  fetch(
+
+    `http://127.0.0.1:5000/repair-history/${selectedRoad.id}`
+
+  )
+
+    .then((res) => res.json())
+
+    .then((data) => {
+
+      setRepairHistory(data);
+
+    });
+
+  // ---------------- MAINTENANCE ----------------
+
+  fetch(
+
+    `http://127.0.0.1:5000/maintenance/${selectedRoad.id}`
+
+  )
+
+    .then((res) => res.json())
+
+    .then((data) => {
+
+      setMaintenanceData(data);
+
+    });
+
+}, [selectedRoad]);
+
 
   if (!selectedRoad) return null;
 
@@ -365,144 +409,71 @@ function TransparencyPanel({
         )}
 
         {/* HISTORY TAB */}
-        {activeTab === "history" && (
+{activeTab === "history" && (
 
   <div>
 
-    {/* CARD 1 */}
+    {repairHistory.length === 0 ? (
 
-    <div
-      style={{
-        background: "#eff6ff",
-        padding: "18px",
-        borderRadius: "18px",
-        marginBottom: "14px",
-        lineHeight: "1.8",
-        border: "1px solid #bfdbfe",
-      }}
-    >
+      <p>No repair history found.</p>
 
-      <p>
-        <strong>Date:</strong>
-        12 Apr 2026
-      </p>
+    ) : (
 
-      <p>
-        <strong>Repair:</strong>
-        Crack Repair
-      </p>
+      repairHistory.map((repair) => (
 
-      <p>
-        <strong>Contractor:</strong>
-        ABC Infra
-      </p>
+        <div
+          key={repair.id}
+          style={{
+            background: "#eff6ff",
+            padding: "18px",
+            borderRadius: "18px",
+            marginBottom: "14px",
+            lineHeight: "1.8",
+            border: "1px solid #bfdbfe",
+          }}
+        >
 
-      <p>
-        <strong>Cost:</strong>
-        ₹20,000
-      </p>
+          <p>
+            <strong>Date:</strong>{" "}
+            {new Date(
+              repair.repair_date
+            ).toLocaleDateString()}
+          </p>
 
-      <p
-        style={{
-          color: "#16a34a",
-          fontWeight: "bold",
-        }}
-      >
-        Completed
-      </p>
+          <p>
+  <strong>Repair Type:</strong>{" "}
+  {repair.repair_type}
+</p>
 
-    </div>
+          <p>
+            <strong>Contractor:</strong>{" "}
+            {repair.repaired_by}
+          </p>
 
-    {/* CARD 2 */}
+          <p>
+            <strong>Cost:</strong> ₹
+            {repair.repair_cost}
+          </p>
 
-    <div
-      style={{
-        background: "#fef3c7",
-        padding: "18px",
-        borderRadius: "18px",
-        marginBottom: "14px",
-        lineHeight: "1.8",
-        border: "1px solid #fde68a",
-      }}
-    >
+          <p
+            style={{
+              color: "#16a34a",
+              fontWeight: "bold",
+            }}
+          >
+            Completed
+          </p>
 
-      <p>
-        <strong>Date:</strong>
-        05 Jan 2026
-      </p>
+        </div>
 
-      <p>
-        <strong>Repair:</strong>
-        Pothole Filling
-      </p>
+      ))
 
-      <p>
-        <strong>Contractor:</strong>
-        XYZ Roads
-      </p>
-
-      <p>
-        <strong>Cost:</strong>
-        ₹8,000
-      </p>
-
-      <p
-        style={{
-          color: "#16a34a",
-          fontWeight: "bold",
-        }}
-      >
-        Completed
-      </p>
-
-    </div>
-
-    {/* CARD 3 */}
-
-    <div
-      style={{
-        background: "#dcfce7",
-        padding: "18px",
-        borderRadius: "18px",
-        lineHeight: "1.8",
-        border: "1px solid #86efac",
-      }}
-    >
-
-      <p>
-        <strong>Date:</strong>
-        20 Oct 2025
-      </p>
-
-      <p>
-        <strong>Repair:</strong>
-        Road Relaying
-      </p>
-
-      <p>
-        <strong>Contractor:</strong>
-        Metro Infra
-      </p>
-
-      <p>
-        <strong>Cost:</strong>
-        ₹65,000
-      </p>
-
-      <p
-        style={{
-          color: "#16a34a",
-          fontWeight: "bold",
-        }}
-      >
-        Completed
-      </p>
-
-    </div>
+    )}
 
   </div>
 
 )}
+
         {/* MAINTENANCE TAB */}
 
        
@@ -510,106 +481,58 @@ function TransparencyPanel({
 
   <div>
 
-    {/* CARD 1 */}
+    {maintenanceData.length === 0 ? (
 
-    <div
-      style={{
-        background: "#eff6ff",
-        padding: "18px",
-        borderRadius: "18px",
-        marginBottom: "14px",
-        lineHeight: "1.8",
-        border: "1px solid #bfdbfe",
-      }}
-    >
+      <p>No maintenance schedules.</p>
 
-      <p>
-        <strong>Date:</strong>
-        30 May 2026
-      </p>
+    ) : (
 
-      <p>
-        <strong>Maintenance:</strong>
-        Road Inspection
-      </p>
+      maintenanceData.map((m) => (
 
-      <p
-        style={{
-          color: "#d97706",
-          fontWeight: "bold",
-        }}
-      >
-        Pending
-      </p>
+        <div
+          key={m.id}
+          style={{
+            background: "#eff6ff",
+            padding: "18px",
+            borderRadius: "18px",
+            marginBottom: "14px",
+            lineHeight: "1.8",
+            border: "1px solid #bfdbfe",
+          }}
+        >
 
-    </div>
+          <p>
+            <strong>Date:</strong>{" "}
+            {new Date(
+              m.scheduled_date
+            ).toLocaleDateString()}
+          </p>
 
-    {/* CARD 2 */}
+          <p>
+            <strong>Maintenance:</strong>{" "}
+            {m.maintenance_type}
+          </p>
 
-    <div
-      style={{
-        background: "#fef3c7",
-        padding: "18px",
-        borderRadius: "18px",
-        marginBottom: "14px",
-        lineHeight: "1.8",
-        border: "1px solid #fde68a",
-      }}
-    >
+          <p
+            style={{
+              color:
+                m.status === "COMPLETED"
+                  ? "#16a34a"
+                  : m.status === "PLANNED"
+                  ? "#2563eb"
+                  : "#d97706",
 
-      <p>
-        <strong>Date:</strong>
-        15 Jun 2026
-      </p>
+              fontWeight: "bold",
+            }}
+          >
+            {m.status}
+          </p>
 
-      <p>
-        <strong>Maintenance:</strong>
-        Road Resurfacing
-      </p>
+        </div>
 
-      <p
-        style={{
-          color: "#2563eb",
-          fontWeight: "bold",
-        }}
-      >
-        Planned
-      </p>
+      ))
 
-    </div>
-
-    {/* CARD 3 */}
-
-    <div
-      style={{
-        background: "#dcfce7",
-        padding: "18px",
-        borderRadius: "18px",
-        lineHeight: "1.8",
-        border: "1px solid #86efac",
-      }}
-    >
-
-      <p>
-        <strong>Date:</strong>
-        02 Jul 2026
-      </p>
-
-      <p>
-        <strong>Maintenance:</strong>
-        Crack Sealing
-      </p>
-
-      <p
-        style={{
-          color: "#16a34a",
-          fontWeight: "bold",
-        }}
-      >
-        Scheduled
-      </p>
-
-    </div>
+    )}
 
   </div>
 
