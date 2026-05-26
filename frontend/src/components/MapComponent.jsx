@@ -905,7 +905,9 @@ function ComplaintPopup({
 //                  MAIN COMPONENT
 // =========================================================
 
-function MapComponent() {
+function MapComponent({isAuthorityView = false}) {
+
+  
 
   const [lat, setLat] = useState(null);
 
@@ -1039,17 +1041,17 @@ function MapComponent() {
 
       {/* COMPLAINT FORM */}
 
-      {lat && lon && (
+      {lat && lon && !isAuthorityView && (
 
-        <ComplaintForm
-          lat={lat}
-          lon={lon}
-          setLat={setLat}
-          setLon={setLon}
-          refreshComplaints={fetchComplaints}
-        />
+      <ComplaintForm
+       lat={lat}
+       lon={lon}
+       setLat={setLat}
+       setLon={setLon}
+       refreshComplaints={fetchComplaints}
+  />
 
-      )}
+)}
 
       <MapContainer
         center={mapCenter}

@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import MapComponent
+from "../components/MapComponent";
 
 const AuthorityDashboard = () => {
 
@@ -356,6 +358,136 @@ const response =
 
       </div>
 
+     
+
+     
+      
+      {/* ================= MAP ================= */}
+
+<div
+  style={{
+
+    background: "white",
+
+    padding: "22px",
+
+    borderRadius: "20px",
+
+    marginBottom: "24px",
+
+    boxShadow:
+      "0px 4px 16px rgba(0,0,0,0.12)",
+
+  }}
+>
+
+  {/* TITLE */}
+
+  <div
+    style={{
+
+      display: "flex",
+
+      justifyContent:
+        "space-between",
+
+      alignItems: "center",
+
+      flexWrap: "wrap",
+
+      marginBottom: "18px",
+
+    }}
+  >
+
+    <div>
+
+      <h2
+        style={{
+
+          margin: 0,
+
+          fontSize: "28px",
+
+          color: "#0f172a",
+
+        }}
+      >
+
+        🗺️ Authority Monitoring Map
+
+      </h2>
+
+      <p
+        style={{
+
+          marginTop: "6px",
+
+          color: "#64748b",
+
+          fontSize: "14px",
+
+        }}
+      >
+
+        Live complaint monitoring across your authority region
+
+      </p>
+
+    </div>
+
+    {/* LEGEND */}
+
+    <div
+      style={{
+
+        display: "flex",
+
+        gap: "12px",
+
+        fontWeight: "600",
+
+        color: "#475569",
+
+        flexWrap: "wrap",
+
+      }}
+    >
+
+      <span>🔴 HIGH</span>
+
+      <span>🟠 MEDIUM</span>
+
+      <span>🟡 LOW</span>
+
+    </div>
+
+  </div>
+
+  {/* MAP */}
+
+  <div
+    style={{
+
+      height: "520px",
+
+      borderRadius: "18px",
+
+      overflow: "hidden",
+
+      boxShadow:
+        "0px 4px 14px rgba(0,0,0,0.12)",
+
+    }}
+  >
+
+    <MapComponent
+      isAuthorityView={true}
+    />
+
+  </div>
+
+</div>
       {/* FILTERS */}
 
       <div style={filterBar}>
@@ -458,10 +590,6 @@ const response =
             Crack
           </option>
 
-          <option value="Waterlogging">
-            Waterlogging
-          </option>
-
           <option value="Road Damage">
             Road Damage
           </option>
@@ -557,9 +685,21 @@ const response =
                 (c) => (
 
                   <tr
-                    key={c.id}
-                    style={tableRow}
-                  >
+
+  key={c.id}
+
+  style={tableRow}
+
+  onMouseEnter={(e) =>
+    e.currentTarget.style.background =
+      "#f8fafc"
+  }
+
+  onMouseLeave={(e) =>
+    e.currentTarget.style.background =
+      "white"
+  }
+>
 
                     <td style={tdStyle}>
                       {c.id}
@@ -601,7 +741,7 @@ const response =
 
                               :
 
-                              "#4caf50",
+                              "#eab308",
                         }}
                       >
 
@@ -1592,12 +1732,25 @@ const searchBox = {
   borderRadius: "10px",
   border: "1px solid #ccc",
   width: "250px",
+  background: "white",
+  boxShadow:
+    "0px 2px 8px rgba(0,0,0,0.08)",
+
 };
 
 const filterSelect = {
+
   padding: "10px",
+
   borderRadius: "10px",
+
   border: "1px solid #ccc",
+
+  background: "white",
+
+  boxShadow:
+    "0px 2px 8px rgba(0,0,0,0.08)",
+
 };
 
 const tableBox = {

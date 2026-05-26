@@ -213,10 +213,12 @@ const Dashboard = () => {
   ];
 
   const pieColors = [
-    "#ef4444",
-    "#f59e0b",
-    "#22c55e",
-  ];
+     
+  "#ef4444",
+  "#f59e0b",
+  "#eab308",
+];
+  
 
   // ================= ANALYTICS =================
 
@@ -239,31 +241,54 @@ const Dashboard = () => {
 
       0;
 
-  const pendingZone =
+  const activeComplaints =
+  filteredComplaints.filter(
+    (c) => c.status === "ACTIVE"
+  );
 
-    zoneGraphData.length > 0
+   const pendingZoneCounts = {};
 
-      ?
+   activeComplaints.forEach((c) => {
 
-      zoneGraphData.reduce(
-        (max, z) =>
+     if (pendingZoneCounts[c.zone]) {
 
-          z.complaints >
-          max.complaints
+    pendingZoneCounts[c.zone]++;
 
-            ?
+  }  else {
 
-            z
+    pendingZoneCounts[c.zone] = 1;
 
-            :
+  }
 
-            max
-      ).zone
+});
 
-      :
+   const pendingZone =
 
-      "No Data";
+  Object.keys(pendingZoneCounts)
+    .length > 0
 
+    ?
+
+    Object.keys(
+      pendingZoneCounts
+    ).reduce((a, b) =>
+
+      pendingZoneCounts[a] >
+      pendingZoneCounts[b]
+
+        ?
+
+        a
+
+        :
+
+        b
+
+    )
+
+    :
+
+    "No Pending Complaints";
   // ================= UI =================
 
   return (
@@ -293,6 +318,13 @@ const Dashboard = () => {
         <button
           onClick={handleLogout}
           style={logoutBtn}
+          onMouseEnter={(e) =>
+  e.currentTarget.style.opacity = "0.9"
+}
+
+onMouseLeave={(e) =>
+  e.currentTarget.style.opacity = "1"
+}
         >
           Logout
         </button>
@@ -304,6 +336,16 @@ const Dashboard = () => {
       <div style={cardGrid}>
 
         <div
+          
+           onMouseEnter={(e) =>
+    e.currentTarget.style.transform =
+      "translateY(-4px)"
+  }
+
+  onMouseLeave={(e) =>
+    e.currentTarget.style.transform =
+      "translateY(0px)"
+  }
           style={{
             ...cardStyle,
             borderLeft:
@@ -322,6 +364,16 @@ const Dashboard = () => {
         </div>
 
         <div
+
+           onMouseEnter={(e) =>
+    e.currentTarget.style.transform =
+      "translateY(-4px)"
+  }
+
+  onMouseLeave={(e) =>
+    e.currentTarget.style.transform =
+      "translateY(0px)"
+  }
           style={{
             ...cardStyle,
             borderLeft:
@@ -340,6 +392,16 @@ const Dashboard = () => {
         </div>
 
         <div
+
+           onMouseEnter={(e) =>
+    e.currentTarget.style.transform =
+      "translateY(-4px)"
+  }
+
+  onMouseLeave={(e) =>
+    e.currentTarget.style.transform =
+      "translateY(0px)"
+  }
           style={{
             ...cardStyle,
             borderLeft:
@@ -358,6 +420,16 @@ const Dashboard = () => {
         </div>
 
         <div
+
+           onMouseEnter={(e) =>
+    e.currentTarget.style.transform =
+      "translateY(-4px)"
+  }
+
+  onMouseLeave={(e) =>
+    e.currentTarget.style.transform =
+      "translateY(0px)"
+  }
           style={{
             ...cardStyle,
             borderLeft:
@@ -386,10 +458,39 @@ const Dashboard = () => {
         </h2>
 
         <div
+  style={{
+
+    display: "flex",
+
+    gap: "14px",
+
+    marginBottom: "15px",
+
+    fontWeight: "600",
+
+    color: "#475569",
+
+    flexWrap: "wrap",
+
+  }}
+>
+
+  <span>🔴 HIGH</span>
+
+  <span>🟠 MEDIUM</span>
+
+  <span>🟡 LOW</span>
+
+</div>
+
+        <div
           style={{
-            height: "55vh",
+            height: "500px",
             borderRadius: "18px",
             overflow: "hidden",
+
+            boxShadow:
+  "0px 4px 14px rgba(0,0,0,0.12)",
           }}
         >
 
@@ -490,7 +591,7 @@ const Dashboard = () => {
         <div style={graphCard}>
 
           <h2 style={sectionTitle}>
-            📍 Complaints per Authority
+            📍 Complaints by Authority
           </h2>
 
           <ResponsiveContainer
@@ -537,6 +638,8 @@ const Dashboard = () => {
                 data={severityGraphData}
                 dataKey="value"
                 nameKey="name"
+                 cx="50%"
+                 cy="45%"
                 outerRadius={90}
                 label
               >
@@ -675,6 +778,8 @@ const Dashboard = () => {
         <div
           style={{
             overflowX: "auto",
+            maxHeight: "500px",
+            overflowY: "auto",
           }}
         >
 
@@ -728,6 +833,14 @@ const Dashboard = () => {
                   <tr
                     key={row.id}
                     style={tableRow}
+                     onMouseEnter={(e) =>
+                     e.currentTarget.style.background =  "#f8fafc"
+  }
+
+                     onMouseLeave={(e) =>
+                      e.currentTarget.style.background =  "white"
+  }
+
                   >
 
                     <td style={tdStyle}>
@@ -771,7 +884,7 @@ const Dashboard = () => {
 
                               :
 
-                              "#22c55e",
+                              "#eab308",
                         }}
                       >
 
@@ -908,15 +1021,7 @@ const Dashboard = () => {
                   0 && (
 
                   <tr>
-                    onMouseEnter={(e) =>
-  e.currentTarget.style.background =
-    "#f8fafc"
-}
-
-onMouseLeave={(e) =>
-  e.currentTarget.style.background =
-    "white"
-}
+                   
                     <td
                       colSpan="8"
 
@@ -1010,6 +1115,7 @@ const logoutBtn = {
   color: "white",
   fontWeight: "bold",
   cursor: "pointer",
+  transition: "0.2s ease",
 };
 
 const cardGrid = {
@@ -1096,6 +1202,7 @@ const graphCard = {
   background: "white",
   padding: "24px",
   borderRadius: "18px",
+  minHeight: "380px",
   boxShadow:
     "0px 4px 16px rgba(0,0,0,0.12)",
 };
