@@ -360,6 +360,135 @@ const response =
 
      
 
+     {/* ================= KPI CARDS ================= */}
+
+<div
+  style={{
+
+    display: "grid",
+
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(240px, 1fr))",
+
+    gap: "20px",
+
+    marginBottom: "25px",
+
+  }}
+>
+
+  {/* TOTAL */}
+
+  <div
+    style={{
+      ...kpiCard,
+      borderLeft:
+        "6px solid #2563eb",
+    }}
+  >
+
+    <h3 style={kpiTitle}>
+      📋 Total Complaints
+    </h3>
+
+    <h1 style={kpiValue}>
+
+      {complaints.length}
+
+    </h1>
+
+  </div>
+
+  {/* ACTIVE */}
+
+  <div
+    style={{
+      ...kpiCard,
+      borderLeft:
+        "6px solid #ef4444",
+    }}
+  >
+
+    <h3 style={kpiTitle}>
+      🚨 Active Complaints
+    </h3>
+
+    <h1 style={kpiValue}>
+
+      {
+
+        complaints.filter(
+          (c) =>
+            c.status === "ACTIVE"
+        ).length
+
+      }
+
+    </h1>
+
+  </div>
+
+  {/* IN PROGRESS */}
+
+  <div
+    style={{
+      ...kpiCard,
+      borderLeft:
+        "6px solid #f59e0b",
+    }}
+  >
+
+    <h3 style={kpiTitle}>
+      🛠️ In Progress
+    </h3>
+
+    <h1 style={kpiValue}>
+
+      {
+
+        complaints.filter(
+          (c) =>
+            c.status ===
+            "IN_PROGRESS"
+        ).length
+
+      }
+
+    </h1>
+
+  </div>
+
+  {/* RESOLVED */}
+
+  <div
+    style={{
+      ...kpiCard,
+      borderLeft:
+        "6px solid #22c55e",
+    }}
+  >
+
+    <h3 style={kpiTitle}>
+      ✅ Resolved
+    </h3>
+
+    <h1 style={kpiValue}>
+
+      {
+
+        complaints.filter(
+          (c) =>
+            c.status ===
+            "RESOLVED"
+        ).length
+
+      }
+
+    </h1>
+
+  </div>
+
+</div>
      
       
       {/* ================= MAP ================= */}
@@ -1890,5 +2019,38 @@ const maintenanceCard = {
   marginTop: "10px",
 
   fontSize: "13px",
+
+};
+
+const kpiCard = {
+
+  background: "white",
+
+  padding: "22px",
+
+  borderRadius: "18px",
+
+  boxShadow:
+    "0px 4px 14px rgba(0,0,0,0.10)",
+
+};
+
+const kpiTitle = {
+
+  color: "#64748b",
+
+  fontSize: "16px",
+
+  marginBottom: "12px",
+
+};
+
+const kpiValue = {
+
+  color: "#0f172a",
+
+  fontSize: "38px",
+
+  margin: 0,
 
 };
