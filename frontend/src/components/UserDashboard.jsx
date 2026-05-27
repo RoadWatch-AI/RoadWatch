@@ -227,26 +227,43 @@ function UserDashboard() {
             </thead>
 
             <tbody>
-
               {safeComplaints.length > 0 ? (
 
-                safeComplaints.map((c, index) => (
+  [...safeComplaints]
 
-                  <tr key={index}>
+    .sort(
 
-                    <td>{c.issue}</td>
+      (a, b) =>
 
-                    <td>{c.road_name}</td>
+        new Date(
+          b.created_at
+        ) -
 
-                    <td>
+        new Date(
+          a.created_at
+        )
 
-                      <span
-                        className={`severity ${c.severity?.toLowerCase()}`}
-                      >
-                        {c.severity}
-                      </span>
+    )
 
-                    </td>
+    .slice(0, 10)
+
+    .map((c, index) => (
+
+      <tr key={index}>
+
+        <td>{c.issue}</td>
+
+        <td>{c.road_name}</td>
+
+        <td>
+
+          <span
+            className={`severity ${c.severity?.toLowerCase()}`}
+          >
+            {c.severity}
+          </span>
+
+        </td>
 
                     <td>
 

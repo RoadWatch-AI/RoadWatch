@@ -17,6 +17,9 @@ function MyComplaints() {
   const [complaints, setComplaints] =
   useState([]);
 
+  const [currentPage, setCurrentPage] =
+  useState(1);
+
   useEffect(() => {
 
   const token =
@@ -115,6 +118,36 @@ function MyComplaints() {
 
     });
 
+  const complaintsPerPage = 5;
+
+const indexOfLastComplaint =
+
+  currentPage *
+  complaintsPerPage;
+
+const indexOfFirstComplaint =
+
+  indexOfLastComplaint -
+  complaintsPerPage;
+
+const currentComplaints =
+
+  filteredComplaints.slice(
+
+    indexOfFirstComplaint,
+
+    indexOfLastComplaint
+
+  );
+
+const totalPages = Math.ceil(
+
+  filteredComplaints.length /
+
+  complaintsPerPage
+
+);  
+
   return (
 
     <div className="dashboard">
@@ -211,6 +244,7 @@ function MyComplaints() {
         </div>
 
       </div>
+      
 
       {/* TABLE */}
 
@@ -242,7 +276,7 @@ function MyComplaints() {
 
           <tbody>
 
-            {filteredComplaints.map(
+           {currentComplaints.map(
               (c, index) => (
 
                 <tr key={index}>
@@ -370,13 +404,51 @@ function MyComplaints() {
 
       <div className="pagination">
 
-        <button>
-          Previous
-        </button>
+        <button
 
-        <button>
-          Next
-        </button>
+  disabled={currentPage === 1}
+
+  onClick={() => {
+
+    if (currentPage > 1) {
+
+      setCurrentPage(
+        currentPage - 1
+      );
+
+    }
+
+  }}
+>
+
+  Previous
+
+</button>
+
+        <button
+
+  disabled={
+    currentPage === totalPages
+  }
+
+  onClick={() => {
+
+    if (
+      currentPage < totalPages
+    ) {
+
+      setCurrentPage(
+        currentPage + 1
+      );
+
+    }
+
+  }}
+>
+
+  Next
+
+</button>
 
       </div>
 
