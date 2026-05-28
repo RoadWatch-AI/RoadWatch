@@ -301,17 +301,36 @@ function ComplaintForm({
 
         {preview ? (
 
-          <img
-            src={preview}
-            alt="Preview"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-            }}
-          />
+image?.type?.startsWith(
+  "video"
+) ? (
 
-        ) : (
+    <video
+      src={preview}
+      controls
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        borderRadius: "12px",
+      }}
+    />
+
+  ) : (
+
+    <img
+      src={preview}
+      alt="Preview"
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+      }}
+    />
+
+  )
+
+) : (
 
           <div
             style={{

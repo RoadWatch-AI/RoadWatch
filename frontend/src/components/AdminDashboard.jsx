@@ -70,7 +70,8 @@ const Dashboard = () => {
           anomalies:
             c.anomalies || [],
 
-          resolutionDays: 3,
+          createdAt: c.created_at,
+          resolvedAt: c.resolved_at,
 
         }));
 
@@ -222,24 +223,61 @@ const Dashboard = () => {
 
   // ================= ANALYTICS =================
 
-  const avgResolution =
+const resolvedComplaints =
 
-    filteredComplaints.length > 0
+  filteredComplaints.filter(
 
-      ?
+    (c) =>
 
-      (
-        filteredComplaints.reduce(
-          (sum, c) =>
-            sum + c.resolutionDays,
-          0
-        ) /
-        filteredComplaints.length
-      ).toFixed(1)
+      c.status === "RESOLVED" &&
 
-      :
+      c.createdAt &&
 
-      0;
+      c.resolvedAt
+
+  );
+
+const avgResolution =
+
+  resolvedComplaints.length > 0
+
+    ?
+
+    (
+
+      resolvedComplaints.reduce(
+
+        (sum, c) => {
+
+          const created = new Date(
+            c.createdAt
+          );
+
+          const resolved = new Date(
+            c.resolvedAt
+          );
+
+          const diffDays =
+
+            (resolved - created) /
+
+            (1000 * 60 * 60 * 24);
+
+          return sum + diffDays;
+
+        },
+
+        0
+
+      ) /
+
+      resolvedComplaints.length
+
+    ).toFixed(1)
+
+    :
+
+    0;
 
   const activeComplaints =
   filteredComplaints.filter(
@@ -562,9 +600,37 @@ onMouseLeave={(e) =>
               Best Contractor
             </h3>
 
-            <p style={bigValue}>
-              Techno Roads Pvt Ltd
-            </p>
+<p style={bigValue}>
+
+{
+
+  filteredComplaints.filter(
+
+    (c) =>
+
+      c.contractor !==
+      "Not Assigned"
+
+  ).length > 0
+
+    ?
+
+    filteredComplaints.find(
+
+      (c) =>
+
+        c.contractor !==
+        "Not Assigned"
+
+    ).contractor
+
+    :
+
+    "No Data"
+
+}
+
+</p>
 
           </div>
 
@@ -575,8 +641,34 @@ onMouseLeave={(e) =>
             </h3>
 
             <p style={bigValue}>
-              Metro Infra
-            </p>
+ {
+
+  activeComplaints.filter(
+
+    (c) =>
+
+      c.contractor !==
+      "Not Assigned"
+
+  ).length > 0
+
+    ?
+
+    activeComplaints.find(
+
+      (c) =>
+
+        c.contractor !==
+        "Not Assigned"
+
+    ).contractor
+
+    :
+
+    "No Delays"
+
+}
+</p>
 
           </div>
 
@@ -697,22 +789,32 @@ onMouseLeave={(e) =>
               All Authorities
             </option>
 
-            <option value="Zone 1">
-              Zone 1
-            </option>
+           {
 
-            <option value="Zone 2">
-              Zone 2
-            </option>
+  [
 
-            <option value="Zone 3">
-              Zone 3
-            </option>
+    ...new Set(
 
-            <option value="Zone 4">
-              Zone 4
-            </option>
+      complaintsData.map(
+        (c) => c.zone
+      )
 
+    ),
+
+  ].map((zone) => (
+
+    <option
+      key={zone}
+      value={zone}
+    >
+
+      {zone}
+
+    </option>
+
+  ))
+
+}
           </select>
 
           <select

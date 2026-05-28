@@ -684,12 +684,12 @@ function ComplaintPopup({
         {/* AUTHORITY */}
 
         <p
-          style={{
-            marginBottom: "6px",
-            lineHeight: "0.8",
-            fontSize: "16px",
-          }}
-        >
+  style={{
+    marginBottom: "12px",
+    lineHeight: "1.3",
+    fontSize: "16px",
+  }}
+>
 
           <strong
             style={{
@@ -1101,7 +1101,13 @@ function MapComponent({isAuthorityView = false}) {
 
         {/* COMPLAINT MARKERS */}
 
-        {complaints.map((c) => (
+        {complaints
+
+.filter(
+  (c) => c.status !== "RESOLVED"
+)
+
+.map((c) => (
 
           <Marker
             key={c.id}

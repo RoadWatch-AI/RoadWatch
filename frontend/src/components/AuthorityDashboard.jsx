@@ -999,131 +999,139 @@ const response =
     }}
   >
 
-    {/* UPDATE SECTION */}
+{/* UPDATE SECTION */}
 
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+{
 
-      <button
+c.status !== "RESOLVED" && (
+
+<div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+  }}
+>
+
+  <button
+
+    style={{
+      ...actionBtn,
+      background: "#2563eb",
+    }}
+
+    onClick={() => {
+
+      if (openDropdown === c.id) {
+
+        setOpenDropdown(null);
+
+      } else {
+
+        setOpenDropdown(c.id);
+
+      }
+
+    }}
+  >
+
+    Update Status
+
+  </button>
+
+  {
+
+    openDropdown === c.id && (
+
+      <select
 
         style={{
-          ...actionBtn,
-          background: "#2563eb",
+          padding: "10px",
+          borderRadius: "8px",
+          width: "130px",
+          marginTop: "6px",
+          border: "1px solid #cbd5e1",
+          fontWeight: "600",
         }}
 
-        onClick={() => {
+        defaultValue={c.status}
 
-          if (openDropdown === c.id) {
+        onChange={async (e) => {
 
-            setOpenDropdown(null);
+          const token =
+            localStorage.getItem("token");
 
-          } else {
+          const newStatus =
+            e.target.value;
 
-            setOpenDropdown(c.id);
+          try {
+
+            const response = await fetch(
+
+              `http://127.0.0.1:5000/update-status/${c.id}`,
+
+              {
+
+                method: "PUT",
+
+                headers: {
+
+                  "Content-Type":
+                    "application/json",
+
+                  Authorization:
+                    `Bearer ${token}`
+
+                },
+
+                body: JSON.stringify({
+
+                  status: newStatus
+
+                })
+
+              }
+
+            );
+
+            const data =
+              await response.json();
+
+            alert(data.message);
+
+            window.location.reload();
+
+          } catch (err) {
+
+            console.log(err);
 
           }
 
         }}
       >
 
-        Update Status
+        <option value="ACTIVE">
+          ACTIVE
+        </option>
 
-      </button>
+        <option value="IN_PROGRESS">
+          IN_PROGRESS
+        </option>
 
-      {
+        <option value="RESOLVED">
+          RESOLVED
+        </option>
 
-        openDropdown === c.id && (
+      </select>
 
-          <select
+    )
 
-            style={{
-              padding: "10px",
-              borderRadius: "8px",
-              width: "130px",
-              marginTop: "6px",
-              border: "1px solid #cbd5e1",
-              fontWeight: "600",
-            }}
+  }
 
-            defaultValue={c.status}
+</div>
 
-            onChange={async (e) => {
+)
 
-              const token =
-                localStorage.getItem("token");
-
-              const newStatus =
-                e.target.value;
-
-              try {
-
-                const response = await fetch(
-
-                  `http://127.0.0.1:5000/update-status/${c.id}`,
-
-                  {
-
-                    method: "PUT",
-
-                    headers: {
-
-                      "Content-Type":
-                        "application/json",
-
-                      Authorization:
-                        `Bearer ${token}`
-
-                    },
-
-                    body: JSON.stringify({
-
-                      status: newStatus
-
-                    })
-
-                  }
-
-                );
-
-                const data =
-                  await response.json();
-
-                alert(data.message);
-
-                window.location.reload();
-
-              } catch (err) {
-
-                console.log(err);
-
-              }
-
-            }}
-          >
-
-            <option value="ACTIVE">
-              ACTIVE
-            </option>
-
-            <option value="IN_PROGRESS">
-              IN_PROGRESS
-            </option>
-
-            <option value="RESOLVED">
-              RESOLVED
-            </option>
-
-          </select>
-
-        )
-
-      }
-
-    </div>
+}
 
 {/* ADD REPAIR */}
 
@@ -1131,9 +1139,7 @@ const response =
 
 {
 
-  c.status === "RESOLVED" ||
-
-repairAdded[c.id] ? (
+  repairAdded[c.id] ? (
 
     <button
 
@@ -1153,32 +1159,50 @@ repairAdded[c.id] ? (
 
   ) : (
 
-    <button
+    c.status !== "RESOLVED"
 
-      style={actionBtn}
+    &&
 
-      onClick={() => {
+    !(
 
-        if (openRepairForm === c.id) {
+      c.status === "ACTIVE"
 
-          setOpenRepairForm(null);
+      &&
 
-        } else {
+      c.anomalies?.length > 0
 
-          setOpenRepairForm(c.id);
+    )
 
-        }
+    && (
 
-      }}
-    >
+      <button
 
-      Add Repair
+        style={actionBtn}
 
-    </button>
+        onClick={() => {
+
+          if (openRepairForm === c.id) {
+
+            setOpenRepairForm(null);
+
+          } else {
+
+            setOpenRepairForm(c.id);
+
+          }
+
+        }}
+      >
+
+        Add Repair
+
+      </button>
+
+    )
 
   )
 
-}  
+}
 
  {
 
@@ -1440,7 +1464,20 @@ setOpenRepairForm(null);
     }}
   >
 
-    Maintenance
+{
+
+  maintenanceHistory[c.id]
+    ?.length > 0
+
+    ?
+
+    "Update Maintenance"
+
+    :
+
+    "Add Maintenance"
+
+}
 
   </button>
 

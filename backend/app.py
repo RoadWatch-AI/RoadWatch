@@ -15,6 +15,110 @@ from flask_jwt_extended import (
 import bcrypt
 import cv2
 
+ROAD_ALIASES = {
+
+    # ================= GST =================
+
+    "Grand Southern Trunk Road":
+        "GST Road",
+
+    "Grand Northern Trunk Road":
+        "GST Road",
+
+    "GST":
+        "GST Road",
+
+    # ================= OMR =================
+
+    "Rajiv Gandhi IT Expressway":
+        "Rajiv Gandhi Salai",
+
+    "Rajiv Gandhi Road":
+        "Rajiv Gandhi Salai",
+
+    "Old Mahabalipuram Road":
+        "OMR Road",
+
+    "OMR":
+        "OMR Road",
+
+    "OMR Service Rd":
+        "OMR Service Road",
+
+    # ================= ECR =================
+
+    "East Coast Road":
+        "ECR Road",
+
+    "ECR":
+        "ECR Road",
+
+    "East Coast Link":
+        "East Coast Link Road",
+
+    # ================= ANNA SALAI =================
+
+    "Mount Road":
+        "Anna Salai",
+
+    # ================= LB ROAD =================
+
+    "LB Rd":
+        "LB Road",
+
+    "Lattice Bridge Road":
+        "LB Road",
+
+    # ================= KAMARAJAR =================
+
+    "Kamaraj Salai":
+        "Kamarajar Salai",
+
+    # ================= THIRUVANMIYUR =================
+
+    "Thiruvanmiyur Road":
+        "Thiruvanmiyur Main Road",
+
+    # ================= VELACHERY =================
+
+    "Velachery Road":
+        "Velachery Main Road",
+
+    # ================= PERUNGUDI =================
+
+    "Perungudi Road":
+        "Perungudi Industrial Road",
+
+    # ================= BESANT NAGAR =================
+
+    "Besant Avenue Road":
+        "Besant Nagar Road",
+
+    # ================= IIT =================
+
+    "IITM Road":
+        "Sardar Patel Road",
+
+    "Research Park Road":
+        "IIT Research Park Road",
+
+    # ================= MARINA =================
+
+    "Marina Beach Road":
+        "Kamarajar Salai",
+
+    # ================= CATHEDRAL =================
+
+    "Cathedral Rd":
+        "Cathedral Road",
+
+    # ================= ARCOT =================
+
+    "Arcot Rd":
+        "Arcot Road",
+
+}
+
 app = Flask(__name__)
 CORS(app)
 
@@ -152,7 +256,7 @@ def detect_anomaly(
 
     ).first()
 
-    if latest_repair:
+    if latest_repair and len(related_complaints) >= 2:
 
         days_since_repair = (
 
@@ -679,32 +783,61 @@ def create_complaint():
 
     lon = request.form.get("lon")
 
-    road_name = request.form.get("road_name")
+    # =====================================================
+    # ROAD NAME + ALIAS MATCHING
+    # =====================================================
 
-    road_type = request.form.get("road_type")
+    road_name = request.form.get(
+        "road_name"
+    )
 
-    area = request.form.get("area")
+    for alias, actual_name in ROAD_ALIASES.items():
 
-    description = request.form.get("description")
+        if alias.lower() in road_name.lower():
 
-    # -------------------- ROAD TYPE NORMALIZATION --------------------
+            road_name = actual_name
+
+            break
+
+    road_type = request.form.get(
+        "road_type"
+    )
+
+    area = request.form.get(
+        "area"
+    )
+
+    description = request.form.get(
+        "description"
+    )
+
+    # =====================================================
+    # ROAD TYPE NORMALIZATION
+    # =====================================================
 
     if road_type == "primary":
+
         road_type = "NH"
 
     elif road_type == "secondary":
+
         road_type = "SH"
 
     elif road_type == "tertiary":
+
         road_type = "MDR"
 
     elif road_type == "trunk":
+
         road_type = "NH"
 
     else:
+
         road_type = "City Road"
 
-    # -------------------- FIND MATCHING ROAD PROJECT --------------------
+    # =====================================================
+    # FIND MATCHING ROAD PROJECT
+    # =====================================================
 
     matched_project = RoadProject.query.filter_by(
         road_name=road_name
@@ -718,18 +851,23 @@ def create_complaint():
 
     if matched_project:
 
-        authority_id = matched_project.authority_id
+        authority_id = (
+            matched_project.authority_id
+        )
 
-        contractor_id = matched_project.contractor_id
+        contractor_id = (
+            matched_project.contractor_id
+        )
 
         project_id = matched_project.id
 
         if not area:
+
             area = matched_project.area
 
-    # =========================================================
-    #                    IMAGE HANDLING
-    # =========================================================
+    # =====================================================
+    # IMAGE / VIDEO HANDLING
+    # =====================================================
 
     media = request.files.get("image")
 
@@ -740,157 +878,146 @@ def create_complaint():
     severity = "LOW"
 
     confidence_score = 0
-    
+
     media_type = "image"
 
     if media:
 
         filename = secure_filename(
-        media.filename
-)
+            media.filename
+        )
+
         is_video = filename.lower().endswith(
-           (".mp4", ".mov", ".avi")
-   )
-         
+            (".mp4", ".mov", ".avi")
+        )
+
         media_type = (
-        "video"
-        if is_video
-        else "image"
-    )
-        
+            "video"
+            if is_video
+            else "image"
+        )
+
         image_path = f"uploads/{filename}"
-       
+
         media.save(
-        os.path.join(
-        app.config["UPLOAD_FOLDER"],
-        filename
-    )
-)
-        # =========================================================
-        #                    AI DETECTION
-        # =========================================================
+
+            os.path.join(
+
+                app.config["UPLOAD_FOLDER"],
+
+                filename
+
+            )
+
+        )
+
+        # =====================================================
+        # AI DETECTION
+        # =====================================================
 
         try:
 
-          if is_video:
+            if is_video:
 
-            frame_path = extract_frame(
-            image_path
-        )
-
-            results = model(
-            frame_path,
-            conf=0.35
-        )
-
-          else:
-
-             results = model(
-                 image_path,
-                 conf=0.35
-        )
-
-          highest_conf = 0
-
-          for result in results:
-
-             for box in result.boxes:
-
-                 class_id = int(box.cls[0])
-
-                 confidence = float(box.conf[0])
-
-                 if confidence > highest_conf:
-
-                   highest_conf = confidence
-
-                   confidence_score = round(
-                     confidence,
-                     2
+                frame_path = extract_frame(
+                    image_path
                 )
 
-                   issue = CLASS_MAPPING.get(
-                      class_id,
-                      "Road Damage"
+                results = model(
+                    frame_path,
+                    conf=0.35
                 )
 
-                   x1, y1, x2, y2 = box.xyxy[0]
+            else:
 
-                   width = x2 - x1
-
-                   height = y2 - y1
-
-                   damage_area = width * height
-
-                   complaints_count = (
-                     Complaint.query.filter_by(
-                        road_name=road_name
-                    ).count()
+                results = model(
+                    image_path,
+                    conf=0.35
                 )
 
-                   if complaints_count >= 5:
+            highest_conf = 0
 
-                     repeated_damage = 1
+            for result in results:
 
-                   else:
+                for box in result.boxes:
 
-                    repeated_damage = 0
+                    class_id = int(
+                        box.cls[0]
+                    )
 
-                   severity = predict_severity(
+                    confidence = float(
+                        box.conf[0]
+                    )
 
-                     damage_area,
+                    if confidence > highest_conf:
 
-                     complaints_count,
+                        highest_conf = confidence
 
-                     repeated_damage
+                        confidence_score = round(
+                            confidence,
+                            2
+                        )
 
-                )
+                        issue = CLASS_MAPPING.get(
+                            class_id,
+                            "Road Damage"
+                        )
 
-    # FALLBACK FOR VIDEO
+                        x1, y1, x2, y2 = box.xyxy[0]
 
-          if highest_conf == 0 and is_video:
+                        width = x2 - x1
 
-            issue = "Road Damage"
+                        height = y2 - y1
 
-            severity = "MEDIUM"
+                        damage_area = (
+                            width * height
+                        )
+
+                        complaints_count = (
+                            Complaint.query.filter_by(
+                                road_name=road_name
+                            ).count()
+                        )
+
+                        if complaints_count >= 5:
+
+                            repeated_damage = 1
+
+                        else:
+
+                            repeated_damage = 0
+
+                        severity = predict_severity(
+
+                            damage_area,
+
+                            complaints_count,
+
+                            repeated_damage
+
+                        )
+
+            # VIDEO FALLBACK
+
+            if highest_conf == 0 and is_video:
+
+                issue = "Road Damage"
+
+                severity = "MEDIUM"
 
         except Exception as e:
 
-           print("AI ERROR:", e)
+            print("AI ERROR:", e)
 
-           issue = "Road Damage"
+            issue = "Road Damage"
 
-           severity = "LOW"
+            severity = "LOW"
 
-    # =========================================================
-    # DAMAGE AREA CALCULATION
-    # =========================================================
-
-                     
-
-    # =========================================================
-    # COMPLAINT HISTORY
-    # =========================================================
-
-
-    # =========================================================
-    # REPEATED DAMAGE CHECK
-    # =========================================================
-
-                      
-    # =========================================================
-    # HYBRID AI SEVERITY PREDICTION
-    # =========================================================
-
-                       
-
-
-    # =========================================================
-    #                    STORE COMPLAINT
-    # =========================================================
+    # =====================================================
+    # STORE COMPLAINT
+    # =====================================================
 
     new_complaint = Complaint(
-
 
         lat=lat,
 
@@ -917,7 +1044,7 @@ def create_complaint():
         project_id=project_id,
 
         user_id=user_id,
-        
+
         media_type=media_type,
 
     )
@@ -926,9 +1053,9 @@ def create_complaint():
 
     db.session.commit()
 
-    # =========================================================
-    #                    STORE AI PREDICTION
-    # =========================================================
+    # =====================================================
+    # STORE AI PREDICTION
+    # =====================================================
 
     ai_prediction = AIPrediction(
 
@@ -1338,15 +1465,45 @@ def get_road_projects():
 )
 def get_repair_history(complaint_id):
 
-    repairs = RepairHistory.query.filter_by(
-        complaint_id=complaint_id
+    complaint = Complaint.query.get(
+        complaint_id
+    )
+
+    if not complaint:
+
+        return jsonify([])
+
+    # =========================================
+    # FIND ALL COMPLAINTS ON SAME ROAD
+    # =========================================
+
+    related_complaints = Complaint.query.filter_by(
+        road_name=complaint.road_name
+    ).all()
+
+    complaint_ids = [
+
+        c.id for c in related_complaints
+
+    ]
+
+    # =========================================
+    # FETCH ALL REPAIRS FOR ROAD
+    # =========================================
+
+    repairs = RepairHistory.query.filter(
+
+        RepairHistory.complaint_id.in_(
+            complaint_ids
+        )
+
     ).all()
 
     output = []
 
     for repair in repairs:
 
-        complaint = Complaint.query.get(
+        repair_complaint = Complaint.query.get(
             repair.complaint_id
         )
 
@@ -1360,9 +1517,13 @@ def get_repair_history(complaint_id):
 
             "repair_type": repair.repair_type,
 
+            "road_name":
+                repair_complaint.road_name
+                if repair_complaint else None,
+
             "road_type":
-                complaint.road_type
-                if complaint else None,
+                repair_complaint.road_type
+                if repair_complaint else None,
 
             "remarks": repair.remarks,
 
@@ -1382,8 +1543,38 @@ def get_repair_history(complaint_id):
 )
 def get_maintenance(complaint_id):
 
-    schedules = MaintenanceSchedule.query.filter_by(
-        complaint_id=complaint_id
+    complaint = Complaint.query.get(
+        complaint_id
+    )
+
+    if not complaint:
+
+        return jsonify([])
+
+    # =========================================
+    # FIND ALL COMPLAINTS ON SAME ROAD
+    # =========================================
+
+    related_complaints = Complaint.query.filter_by(
+        road_name=complaint.road_name
+    ).all()
+
+    complaint_ids = [
+
+        c.id for c in related_complaints
+
+    ]
+
+    # =========================================
+    # FETCH ALL MAINTENANCE FOR ROAD
+    # =========================================
+
+    schedules = MaintenanceSchedule.query.filter(
+
+        MaintenanceSchedule.complaint_id.in_(
+            complaint_ids
+        )
+
     ).all()
 
     output = []
