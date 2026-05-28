@@ -137,10 +137,10 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 #                    DATABASE CONFIG
 # =========================================================
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:sql%40123@localhost/roadwatch'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config["JWT_SECRET_KEY"] = "roadwatch_super_secure_jwt_secret_2026"
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
 
 jwt = JWTManager(app)
