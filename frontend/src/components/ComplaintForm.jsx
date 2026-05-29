@@ -1,5 +1,9 @@
-import { useState } from "react";
+import {
+  useState,
+  useEffect
+} from "react";
 import { Upload } from "lucide-react";
+
 
 function ComplaintForm({
   lat,
@@ -59,6 +63,9 @@ function ComplaintForm({
 
     e.preventDefault();
 
+    let roadName = "";
+let roadType = "";
+let area = "";
     try {
 
       // =========================================================
@@ -75,19 +82,19 @@ function ComplaintForm({
 
       // ---------------- ROAD NAME ----------------
 
-      const roadName =
+       roadName =
         locationData.address.road ||
         locationData.address.suburb ||
         "Unknown Road";
 
       // ---------------- ROAD TYPE ----------------
 
-      const roadType =
+       roadType =
         locationData.type || "Unknown";
 
       // ---------------- AREA ----------------
 
-      const area =
+       area =
         locationData.address.suburb ||
         locationData.address.city ||
         locationData.address.town ||
@@ -164,13 +171,142 @@ function ComplaintForm({
 
     catch (error) {
 
-      console.log(error);
+  console.log(error);
 
-      alert("Error submitting complaint");
+  const offlineComplaints =
+    JSON.parse(
+      localStorage.getItem(
+        "offlineComplaints"
+      )
+    ) || [];
 
-    }
+  offlineComplaints.push({
+
+    lat,
+    lon,
+    description,
+
+    road_name: roadName,
+    road_type: roadType,
+    area,
+
+    created_at:
+      new Date().toISOString()
+
+  });
+
+  localStorage.setItem(
+
+    "offlineComplaints",
+
+    JSON.stringify(
+      offlineComplaints
+    )
+
+  );
+
+  alert(
+    "⚠️ No internet. Complaint saved offline and will sync automatically."
+  );
+
+}
 
   };
+
+  useEffect(() => {
+
+  const syncOfflineComplaints =
+    async () => {
+
+      const pending =
+        JSON.parse(
+          localStorage.getItem(
+            "offlineComplaints"
+          )
+        ) || [];
+
+      if (
+        pending.length === 0
+      ) return;
+
+      for (const complaint of pending) {
+
+        try {
+
+          const formData =
+            new FormData();
+
+          Object.keys(
+            complaint
+          ).forEach((key) => {
+
+            formData.append(
+              key,
+              complaint[key]
+            );
+
+          });
+
+          await fetch(
+
+            "http://127.0.0.1:5000/complaints",
+
+            {
+
+              method: "POST",
+
+              headers: {
+
+                Authorization:
+                  `Bearer ${localStorage.getItem("token")}`
+
+              },
+
+              body: formData
+
+            }
+
+          );
+
+        } catch {
+
+          return;
+
+        }
+
+      }
+
+      localStorage.removeItem(
+        "offlineComplaints"
+      );
+
+      refreshComplaints();
+
+    };
+
+  window.addEventListener(
+
+    "online",
+
+    syncOfflineComplaints
+
+  );
+
+  syncOfflineComplaints();
+
+  return () => {
+
+    window.removeEventListener(
+
+      "online",
+
+      syncOfflineComplaints
+
+    );
+
+  };
+
+}, []);
 
   return (
 
