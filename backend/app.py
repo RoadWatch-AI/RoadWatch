@@ -153,8 +153,7 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
 jwt = JWTManager(app)
 
 db = SQLAlchemy(app)
-with app.app_context():
-    db.create_all()
+
 # =========================================================
 #                    AI MODEL
 # =========================================================
@@ -1761,6 +1760,7 @@ def add_maintenance():
 # =========================================================
 #                    RUN APP
 # =========================================================
-
+with app.app_context():
+    db.create_all()
 if __name__ == "__main__":
     app.run(debug=True)
