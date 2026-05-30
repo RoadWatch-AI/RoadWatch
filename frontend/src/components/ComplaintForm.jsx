@@ -306,7 +306,7 @@ let area = "";
 
   };
 
-}, []);
+}, [refreshComplaints]);
 
   return (
 
