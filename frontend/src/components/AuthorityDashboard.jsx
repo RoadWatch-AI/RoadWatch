@@ -85,7 +85,7 @@ const [maintenanceHistory, setMaintenanceHistory] =
   localStorage.getItem("token");
 
 fetch(
-  "http://127.0.0.1:5000/authority/complaints",
+  "https://roadwatch-backend-2umx.onrender.com/authority/complaints",
   {
 
     headers: {
@@ -291,7 +291,7 @@ const fetchMaintenance = async (
 const response =
   await fetch(
 
-    `http://127.0.0.1:5000/maintenance/${complaintId}`,
+    `https://roadwatch-backend-2umx.onrender.com/maintenance/${complaintId}`,
 
     {
 
@@ -1067,7 +1067,7 @@ c.status !== "RESOLVED" && (
 
             const response = await fetch(
 
-              `http://127.0.0.1:5000/update-status/${c.id}`,
+              `https://roadwatch-backend-2umx.onrender.com/update-status/${c.id}`,
 
               {
 
@@ -1353,7 +1353,7 @@ c.status !== "RESOLVED" && (
               const response =
                 await fetch(
 
-                  "http://127.0.0.1:5000/add-repair",
+                  "https://roadwatch-backend-2umx.onrender.com/add-repair",
 
                   {
 
@@ -1634,7 +1634,7 @@ setOpenRepairForm(null);
               const response =
                 await fetch(
 
-                  "http://127.0.0.1:5000/add-maintenance",
+                  "https://roadwatch-backend-2umx.onrender.com/add-maintenance",
 
                   {
 

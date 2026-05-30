@@ -44,7 +44,7 @@ const Dashboard = () => {
 
   useEffect(() => {
 
-    fetch("http://127.0.0.1:5000/complaints")
+    fetch("https://roadwatch-backend-2umx.onrender.com/complaints")
 
       .then((res) => res.json())
 

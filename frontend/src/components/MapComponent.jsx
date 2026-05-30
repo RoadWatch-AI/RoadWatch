@@ -187,7 +187,7 @@ function TransparencyPanel({
 
   fetch(
 
-    `http://127.0.0.1:5000/repair-history/${selectedRoad.id}`
+    `https://roadwatch-backend-2umx.onrender.com/repair-history/${selectedRoad.id}`
 
   )
 
@@ -203,7 +203,7 @@ function TransparencyPanel({
 
   fetch(
 
-    `http://127.0.0.1:5000/maintenance/${selectedRoad.id}`
+    `https://roadwatch-backend-2umx.onrender.com/maintenance/${selectedRoad.id}`
 
   )
 
@@ -761,7 +761,7 @@ function ComplaintPopup({
     >
 
       <source
-        src={`http://127.0.0.1:5000/${complaint.image_url}`}
+        src={`https://roadwatch-backend-2umx.onrender.com/${complaint.image_url}`}
       />
 
     </video>
@@ -769,12 +769,12 @@ function ComplaintPopup({
   ) : (
 
     <img
-      src={`http://127.0.0.1:5000/${complaint.image_url}`}
+      src={`https://roadwatch-backend-2umx.onrender.com/${complaint.image_url}`}
       alt="Road"
 
       onClick={() =>
         setPreviewImage(
-          `http://127.0.0.1:5000/${complaint.image_url}`
+          `https://roadwatch-backend-2umx.onrender.com/${complaint.image_url}`
         )
       }
 
@@ -959,7 +959,7 @@ function MapComponent({isAuthorityView = false}) {
 
   const fetchComplaints = () => {
 
-    fetch("http://127.0.0.1:5000/complaints")
+    fetch("https://roadwatch-backend-2umx.onrender.com/complaints")
 
       .then((res) => res.json())
 
