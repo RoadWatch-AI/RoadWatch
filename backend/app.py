@@ -158,7 +158,7 @@ db = SQLAlchemy(app)
 #                    AI MODEL
 # =========================================================
 
-model = YOLO("models/YOLOv8_Small_RDD.pt")
+model =None
 
 CLASS_MAPPING = {
 
@@ -921,7 +921,9 @@ def create_complaint():
         # =====================================================
         # AI DETECTION
         # =====================================================
-
+        global model
+        if model is None:
+            model = YOLO("models/YOLOv8_Small_RDD.pt")
         try:
 
             if is_video:
