@@ -6,20 +6,12 @@ function UserDashboard() {
 
   const navigate = useNavigate();
 
-  // =========================================================
-  // STATE
-  // =========================================================
-
   const [complaints, setComplaints] =
     useState([]);
   const safeComplaints =
   Array.isArray(complaints)
     ? complaints
     : [];
-
-  // =========================================================
-  // FETCH REAL USER COMPLAINTS
-  // =========================================================
 
   useEffect(() => {
 
@@ -58,9 +50,6 @@ function UserDashboard() {
 
   }, []);
 
-  // =========================================================
-  // LOGOUT
-  // =========================================================
 
   const handleLogout = () => {
 
@@ -70,9 +59,6 @@ function UserDashboard() {
 
   };
 
-  // =========================================================
-  // STATS
-  // =========================================================
 
   const totalComplaints =
     safeComplaints.length;
@@ -92,9 +78,7 @@ function UserDashboard() {
       (c) => c.status === "RESOLVED"
     ).length;
 
-  // =========================================================
-  // UI
-  // =========================================================
+
 
   return (
 
@@ -107,7 +91,7 @@ function UserDashboard() {
       }}
     >
 
-      {/* NAVBAR */}
+     
 
       <div className="navbar">
 
@@ -122,7 +106,7 @@ function UserDashboard() {
 
       </div>
 
-      {/* HERO */}
+      
 
       <div className="hero">
 
@@ -136,7 +120,7 @@ function UserDashboard() {
 
       </div>
 
-      {/* STATS */}
+      
 
       <div className="stats-grid">
 
@@ -174,7 +158,7 @@ function UserDashboard() {
 
       </div>
 
-      {/* ACTION BUTTONS */}
+      
 
       <div className="actions">
 
@@ -194,7 +178,7 @@ function UserDashboard() {
 
       </div>
 
-      {/* RECENT COMPLAINTS */}
+     
 
       <div className="table-section">
 

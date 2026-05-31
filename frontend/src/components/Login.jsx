@@ -9,9 +9,7 @@ function Login({
 
   const [isSignup, setIsSignup] = useState(false);
 
-  // =========================================================
-  // LOGIN STATE
-  // =========================================================
+  
 
   const [loginData, setLoginData] = useState({
 
@@ -21,9 +19,7 @@ function Login({
 
   });
 
-  // =========================================================
-  // SIGNUP STATE
-  // =========================================================
+
 
   const [signupData, setSignupData] = useState({
 
@@ -39,9 +35,7 @@ function Login({
 
   });
 
-  // =========================================================
-  // LOGIN
-  // =========================================================
+ 
 
   const handleLogin = async (e) => {
 
@@ -119,15 +113,13 @@ function Login({
 
   };
 
-  // =========================================================
-  // SIGNUP
-  // =========================================================
+  
 
   const handleSignup = async (e) => {
 
     e.preventDefault();
 
-    // PASSWORD MATCH VALIDATION
+   
 
     if(
 
@@ -200,7 +192,7 @@ function Login({
 
     <div className="login-page">
 
-      {/* BACKGROUND */}
+     
 
       <div className="background">
 
@@ -214,7 +206,7 @@ function Login({
 
       <div className="container">
 
-        {/* LEFT PANEL */}
+        
 
         <div className="left-panel">
 
@@ -258,13 +250,13 @@ function Login({
 
         </div>
 
-        {/* RIGHT PANEL */}
+       
 
         <div className="right-panel">
 
           <div className="glass-card">
 
-            {/* LOGIN FORM */}
+          
 
             {
 
@@ -339,7 +331,7 @@ function Login({
 
               :
 
-              /* SIGNUP FORM */
+              
 
               <form onSubmit={handleSignup}>
 

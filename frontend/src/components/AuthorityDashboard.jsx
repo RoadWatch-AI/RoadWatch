@@ -50,7 +50,7 @@ const [maintenanceData, setMaintenanceData] =
 const [maintenanceHistory, setMaintenanceHistory] =
   useState({});
 
-  // ================= LOGOUT =================
+  
 
   const handleLogout = () => {
 
@@ -60,7 +60,7 @@ const [maintenanceHistory, setMaintenanceHistory] =
 
   };
 
-  // ================= FILTER STATES =================
+ 
 
   const [search, setSearch] =
     useState("");
@@ -77,7 +77,7 @@ const [maintenanceHistory, setMaintenanceHistory] =
   const [dateFilter, setDateFilter] =
     useState("ALL");
 
-  // ================= FETCH COMPLAINTS =================
+  
 
   useEffect(() => {
 
@@ -139,7 +139,7 @@ fetch(
 
   }, []);
 
-  // ================= DATE FILTER =================
+  
 
   const isWithinDateRange =
     (complaintDate) => {
@@ -199,7 +199,6 @@ fetch(
 
     };
 
-  // ================= FILTERED DATA =================
 
   const filteredComplaints =
     complaints
@@ -277,7 +276,7 @@ fetch(
 
       );
 
-// ================= FETCH MAINTENANCE =================
+
 
 const fetchMaintenance = async (
   complaintId
@@ -325,13 +324,13 @@ const response =
 
 };
 
-  // ================= UI =================
+  
 
   return (
 
     <div style={pageStyle}>
 
-      {/* HEADER */}
+      
 
       <div
         style={headerStyle}
@@ -360,7 +359,7 @@ const response =
 
      
 
-     {/* ================= KPI CARDS ================= */}
+     
 
 <div
   style={{
@@ -399,7 +398,7 @@ const response =
 
   </div>
 
-  {/* ACTIVE */}
+  
 
   <div
     style={{
@@ -428,7 +427,7 @@ const response =
 
   </div>
 
-  {/* IN PROGRESS */}
+  
 
   <div
     style={{
@@ -458,7 +457,7 @@ const response =
 
   </div>
 
-  {/* RESOLVED */}
+  
 
   <div
     style={{
@@ -491,7 +490,7 @@ const response =
 </div>
      
       
-      {/* ================= MAP ================= */}
+      
 
 <div
   style={{
@@ -510,7 +509,7 @@ const response =
   }}
 >
 
-  {/* TITLE */}
+ 
 
   <div
     style={{
@@ -565,7 +564,7 @@ const response =
 
     </div>
 
-    {/* LEGEND */}
+    
 
     <div
       style={{
@@ -593,7 +592,7 @@ const response =
 
   </div>
 
-  {/* MAP */}
+  
 
   <div
     style={{
@@ -617,11 +616,11 @@ const response =
   </div>
 
 </div>
-      {/* FILTERS */}
+     
 
       <div style={filterBar}>
 
-        {/* SEARCH */}
+        
 
         <input
           style={searchBox}
@@ -635,7 +634,7 @@ const response =
           }
         />
 
-        {/* SEVERITY */}
+        
 
         <select
           style={filterSelect}
@@ -665,7 +664,7 @@ const response =
 
         </select>
 
-        {/* STATUS */}
+        
 
         <select
           style={filterSelect}
@@ -695,7 +694,7 @@ const response =
 
         </select>
 
-        {/* ISSUE */}
+        
 
         <select
           style={filterSelect}
@@ -725,7 +724,7 @@ const response =
 
         </select>
 
-        {/* DATE */}
+       
 
         <select
           style={filterSelect}
@@ -757,7 +756,7 @@ const response =
 
       </div>
 
-      {/* TABLE */}
+      
 
       <div style={tableBox}>
 
@@ -880,7 +879,7 @@ const response =
 
                     </td>
 
-                    {/* STATUS */}
+                   
 
                     <td style={tdStyle}>
 
@@ -999,7 +998,7 @@ const response =
     }}
   >
 
-{/* UPDATE SECTION */}
+
 
 {
 
@@ -1436,7 +1435,7 @@ setOpenRepairForm(null);
 
 <div>
 
-{/* MAINTENANCE */}
+
 
   <button
 
@@ -1847,7 +1846,7 @@ setOpenRepairForm(null);
 
 export default AuthorityDashboard;
 
-// ================= STYLES =================
+
 
 const pageStyle = {
   padding: "25px",

@@ -23,7 +23,7 @@ const Dashboard = () => {
 
   };
 
-  // ================= STATES =================
+
 
   const [complaintsData, setComplaintsData] =
     useState([]);
@@ -40,7 +40,7 @@ const Dashboard = () => {
   const [statusFilter, setStatusFilter] =
     useState("ALL");
 
-  // ================= FETCH =================
+ 
 
   useEffect(() => {
 
@@ -91,7 +91,6 @@ const Dashboard = () => {
 
   }, []);
 
-  // ================= LOADING =================
 
   if (loading) {
 
@@ -109,7 +108,7 @@ const Dashboard = () => {
 
   }
 
-  // ================= FILTERS =================
+  
 
   const filteredComplaints =
     complaintsData.filter((c) => {
@@ -129,7 +128,7 @@ const Dashboard = () => {
 
     });
 
-  // ================= STATS =================
+
 
   const stats = {
 
@@ -221,7 +220,7 @@ const Dashboard = () => {
 ];
   
 
-  // ================= ANALYTICS =================
+  
 
 const resolvedComplaints =
 
@@ -327,13 +326,13 @@ const avgResolution =
     :
 
     "No Pending Complaints";
-  // ================= UI =================
+ 
 
   return (
 
     <div style={pageStyle}>
 
-      {/* HEADER */}
+      
 
       <div style={headerStyle}>
 
@@ -369,7 +368,7 @@ onMouseLeave={(e) =>
 
       </div>
 
-      {/* KPI CARDS */}
+      
 
       <div style={cardGrid}>
 
@@ -487,7 +486,7 @@ onMouseLeave={(e) =>
 
       </div>
 
-      {/* CITY MAP */}
+      
 
       <div style={sectionCard}>
 
@@ -546,7 +545,7 @@ onMouseLeave={(e) =>
 
       </div>
 
-      {/* ANALYTICS */}
+      
 
       <div style={sectionCard}>
 
@@ -584,7 +583,7 @@ onMouseLeave={(e) =>
 
       </div>
 
-      {/* CONTRACTOR PERFORMANCE */}
+      
 
       <div style={sectionCard}>
 
@@ -676,7 +675,7 @@ onMouseLeave={(e) =>
 
       </div>
 
-      {/* CHARTS */}
+    
 
       <div style={graphGrid}>
 
@@ -763,7 +762,7 @@ onMouseLeave={(e) =>
 
       </div>
 
-      {/* RECENT COMPLAINTS */}
+      
 
       <div style={sectionCard}>
 
@@ -771,7 +770,7 @@ onMouseLeave={(e) =>
           📋 Recent Complaints
         </h2>
 
-        {/* FILTERS */}
+       
 
         <div style={filterBar}>
 
@@ -875,7 +874,7 @@ onMouseLeave={(e) =>
 
         </div>
 
-        {/* TABLE */}
+        
 
         <div
           style={{
@@ -1170,7 +1169,7 @@ onMouseLeave={(e) =>
 
 export default Dashboard;
 
-// ================= STYLES =================
+
 
 const pageStyle = {
   padding: "25px",

@@ -18,9 +18,7 @@ import "leaflet/dist/leaflet.css";
 
 import ComplaintForm from "./ComplaintForm";
 
-// =========================================================
-//                  SEVERITY MARKERS
-// =========================================================
+
 
 const highIcon = new L.Icon({
   iconUrl:
@@ -49,9 +47,6 @@ const lowIcon = new L.Icon({
   iconAnchor: [12, 41],
 });
 
-// =========================================================
-//              LIVE CURRENT LOCATION DOT
-// =========================================================
 
 const currentDotIcon = L.divIcon({
 
@@ -108,11 +103,6 @@ const currentDotIcon = L.divIcon({
 });
 
 
-
-// =========================================================
-//                  RECENTER MAP
-// =========================================================
-
 function RecenterMap({ location }) {
 
   const map = useMap();
@@ -126,9 +116,6 @@ function RecenterMap({ location }) {
   return null;
 }
 
-// =========================================================
-//              CAPTURE MAP CLICK
-// =========================================================
 
 function LocationMarker({
 
@@ -159,9 +146,7 @@ function LocationMarker({
   return null;
 }
 
-// =========================================================
-//              ROAD TRANSPARENCY PANEL
-// =========================================================
+
 
 function TransparencyPanel({
 
@@ -183,7 +168,7 @@ function TransparencyPanel({
 
   if (!selectedRoad) return;
 
-  // ---------------- REPAIR HISTORY ----------------
+  
 
   fetch(
 
@@ -199,7 +184,7 @@ function TransparencyPanel({
 
     });
 
-  // ---------------- MAINTENANCE ----------------
+ 
 
   fetch(
 
@@ -260,7 +245,7 @@ function TransparencyPanel({
       }}
     >
 
-      {/* HEADER */}
+      
 
       <div
         style={{
@@ -299,7 +284,7 @@ function TransparencyPanel({
 
       </div>
 
-      {/* ROAD NAME */}
+     
 
       <h3
         style={{
@@ -310,7 +295,6 @@ function TransparencyPanel({
         {selectedRoad.road_name}
       </h3>
 
-      {/* TABS */}
 
       <div
         style={{
@@ -357,7 +341,7 @@ function TransparencyPanel({
         }}
       >
 
-        {/* DETAILS TAB */}
+        
 
         {activeTab === "details" && (
 
@@ -408,7 +392,7 @@ function TransparencyPanel({
 
         )}
 
-        {/* HISTORY TAB */}
+        
 {activeTab === "history" && (
 
   <div>
@@ -474,7 +458,7 @@ function TransparencyPanel({
 
 )}
 
-        {/* MAINTENANCE TAB */}
+        
 
        
 {activeTab === "maintenance" && (
@@ -545,9 +529,7 @@ function TransparencyPanel({
   );
 }
 
-// =========================================================
-//              SIMPLE POPUP
-// =========================================================
+
 
 function ComplaintPopup({
 
@@ -573,7 +555,7 @@ function ComplaintPopup({
         }}
       >
 
-        {/* TITLE */}
+      
 
         <h3
           style={{
@@ -586,8 +568,7 @@ function ComplaintPopup({
           {complaint.road_name}
         </h3>
 
-        {/* ROAD TYPE */}
-
+        
         <p
           style={{
             marginBottom: "6px",
@@ -615,7 +596,7 @@ function ComplaintPopup({
 
         </p>
 
-        {/* ISSUE */}
+        
 
         <p
           style={{
@@ -643,8 +624,6 @@ function ComplaintPopup({
           </span>
 
         </p>
-
-        {/* SEVERITY */}
 
         <p
           style={{
@@ -681,7 +660,7 @@ function ComplaintPopup({
 
         </p>
 
-        {/* AUTHORITY */}
+        
 
         <p
   style={{
@@ -713,7 +692,7 @@ function ComplaintPopup({
 
         </p>
 
-        {/* DESCRIPTION */}
+        
 
         <p
           style={{
@@ -744,7 +723,7 @@ function ComplaintPopup({
 
         </p>
 
-        {/* IMAGE */}
+        
         {complaint.image_url && (
 
   complaint.media_type ===
@@ -792,7 +771,7 @@ function ComplaintPopup({
 
 )}
 
-        {/* BUTTON */}
+        
 
         <button
 
@@ -840,7 +819,7 @@ function ComplaintPopup({
 
       </div>
 
-      {/* IMAGE PREVIEW */}
+      
 
       {previewImage && (
 
@@ -901,9 +880,7 @@ function ComplaintPopup({
 
 
 
-// =========================================================
-//                  MAIN COMPONENT
-// =========================================================
+
 
 function MapComponent({isAuthorityView = false}) {
 
@@ -1032,14 +1009,14 @@ function MapComponent({isAuthorityView = false}) {
       }}
     >
 
-      {/* TRANSPARENCY PANEL */}
+      
 
       <TransparencyPanel
         selectedRoad={selectedRoad}
         setSelectedRoad={setSelectedRoad}
       />
 
-      {/* COMPLAINT FORM */}
+      
 
       {lat && lon && !isAuthorityView && (
 
@@ -1099,7 +1076,7 @@ function MapComponent({isAuthorityView = false}) {
 
         </Marker>
 
-        {/* COMPLAINT MARKERS */}
+        
 
         {complaints
 

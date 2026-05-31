@@ -43,9 +43,7 @@ function MyComplaints() {
 
     .then((res) => {
 
-      // ===============================
-      // SESSION EXPIRED
-      // ===============================
+      
 
       if (res.status === 401) {
 
@@ -154,8 +152,6 @@ const totalPages = Math.ceil(
 
       <h1>All Complaints History</h1>
 
-      {/* SEARCH */}
-
       <div className="search-bar">
 
         <input
@@ -169,11 +165,11 @@ const totalPages = Math.ceil(
 
       </div>
 
-      {/* FILTERS */}
+      
 
       <div className="filter-wrapper">
 
-        {/* STATUS FILTER */}
+        
 
         <div className="filter-box">
 
@@ -246,7 +242,7 @@ const totalPages = Math.ceil(
       </div>
       
 
-      {/* TABLE */}
+      
 
       <div className="table-section">
 
@@ -400,7 +396,7 @@ const totalPages = Math.ceil(
 
       </div>
 
-      {/* PAGINATION */}
+      
 
       <div className="pagination">
 

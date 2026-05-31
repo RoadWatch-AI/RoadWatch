@@ -17,9 +17,7 @@ function ComplaintForm({
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
 
-  // =========================================================
-  //                  HANDLE IMAGE UPLOAD
-  // =========================================================
+  
 
   const handleImageChange = (e) => {
 
@@ -35,10 +33,7 @@ function ComplaintForm({
 
   };
 
-  // =========================================================
-  //                  HANDLE DRAG & DROP
-  // =========================================================
-
+  
   const handleDrop = (e) => {
 
     e.preventDefault();
@@ -55,9 +50,7 @@ function ComplaintForm({
 
   };
 
-  // =========================================================
-  //                  HANDLE SUBMIT
-  // =========================================================
+  
 
   const handleSubmit = async (e) => {
 
@@ -68,10 +61,7 @@ let roadType = "";
 let area = "";
     try {
 
-      // =========================================================
-      //          REVERSE GEOCODING USING OPENSTREETMAP
-      // =========================================================
-
+      
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
       );
@@ -80,19 +70,18 @@ let area = "";
 
       console.log(locationData);
 
-      // ---------------- ROAD NAME ----------------
-
+      
        roadName =
         locationData.address.road ||
         locationData.address.suburb ||
         "Unknown Road";
 
-      // ---------------- ROAD TYPE ----------------
+      
 
        roadType =
         locationData.type || "Unknown";
 
-      // ---------------- AREA ----------------
+      
 
        area =
         locationData.address.suburb ||
@@ -103,9 +92,6 @@ let area = "";
       console.log("Road Name:", roadName);
       console.log("Road Type:", roadType);
 
-      // =========================================================
-      //                  CREATE FORM DATA
-      // =========================================================
 
       const formData = new FormData();
 
@@ -121,7 +107,7 @@ let area = "";
 
       formData.append("description", description);
 
-      // ---------------- IMAGE ----------------
+      
 
       if (image) {
 
@@ -129,9 +115,7 @@ let area = "";
 
       }
 
-      // =========================================================
-      //                  SEND TO BACKEND
-      // =========================================================
+     
 
       const backendResponse = await fetch(
   "https://roadwatch-backend-2umx.onrender.com/complaints",
@@ -157,9 +141,7 @@ let area = "";
       );
       refreshComplaints();
 
-      // =========================================================
-      //                  RESET FORM
-      // =========================================================
+     
 
       setDescription("");
 
@@ -325,10 +307,7 @@ let area = "";
       }}
     >
 
-      {/* =========================================================
-                          HEADING
-      ========================================================= */}
-
+  
       <div
   style={{
     display: "flex",
@@ -382,9 +361,7 @@ let area = "";
 
 </div>
 
-      {/* =========================================================
-                      LOCATION STATUS
-      ========================================================= */}
+      
 
       <div
         style={{
@@ -401,9 +378,7 @@ let area = "";
         📍 Location Captured Successfully
       </div>
 
-      {/* =========================================================
-                          UPLOAD BOX
-      ========================================================= */}
+      
 
       <label
         onDragOver={(e) => e.preventDefault()}
@@ -431,9 +406,7 @@ let area = "";
           style={{ display: "none" }}
         />
 
-        {/* =========================================================
-                        IMAGE PREVIEW
-        ========================================================= */}
+        
 
         {preview ? (
 
@@ -495,9 +468,7 @@ image?.type?.startsWith(
 
       </label>
 
-      {/* =========================================================
-                          DESCRIPTION
-      ========================================================= */}
+     
 
       <textarea
         placeholder="Issue Description..."
@@ -517,9 +488,7 @@ image?.type?.startsWith(
         }}
       />
 
-      {/* =========================================================
-                        SUBMIT BUTTON
-      ========================================================= */}
+      
 
       <button
         onClick={handleSubmit}
