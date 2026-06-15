@@ -122,9 +122,7 @@ ROAD_ALIASES = {
 app = Flask(__name__)
 CORS(app)
 
-# =========================================================
-#                    IMAGE UPLOAD CONFIG
-# =========================================================
+
 
 UPLOAD_FOLDER = "uploads"
 
@@ -133,25 +131,27 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# =========================================================
-#                    DATABASE CONFIG
-# =========================================================
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:sql%40123@localhost/roadwatch'
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+    "DATABASE_URL",
+    "postgresql://postgres:sql%40123@localhost:5432/roadwatch"
+)
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config["JWT_SECRET_KEY"] = "roadwatch_super_secure_jwt_secret_2026"
+
+app.config["JWT_SECRET_KEY"] = os.getenv(
+    "JWT_SECRET_KEY",
+    "roadwatch_local_dev_secret"
+)
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
 
 jwt = JWTManager(app)
 
 db = SQLAlchemy(app)
 
-# =========================================================
-#                    AI MODEL
-# =========================================================
 
-model = YOLO("models/YOLOv8_Small_RDD.pt")
+
+model =None
 
 CLASS_MAPPING = {
 
@@ -162,9 +162,7 @@ CLASS_MAPPING = {
 
 }
 
-# =========================================================
-#              SEVERITY PREDICTION ENGINE
-# =========================================================
+
 
 def predict_severity(
 
@@ -200,7 +198,7 @@ def predict_severity(
 
     )
 
-    # ---------------- FINAL LABEL ----------------
+    
 
     if score >= 70:
 
@@ -914,7 +912,9 @@ def create_complaint():
         # =====================================================
         # AI DETECTION
         # =====================================================
-
+        global model
+        if model is None:
+            model = YOLO("models/YOLOv8_Small_RDD.pt")
         try:
 
             if is_video:
@@ -1217,9 +1217,7 @@ def get_complaints():
 
     return jsonify(output)
 
-# =========================================================
-#                 MY COMPLAINTS
-# =========================================================
+
 
 @app.route("/my-complaints", methods=["GET"])
 @jwt_required()
@@ -1234,9 +1232,7 @@ def get_my_complaints():
     output = []
 
     for complaint in complaints:
-                # =====================================================
-        # PROJECT INFO
-        # =====================================================
+       
 
         project = None
 
@@ -1348,9 +1344,7 @@ def authority_complaints():
     output = []
 
     for complaint in complaints:
-                # =====================================================
-        # PROJECT INFO
-        # =====================================================
+                
 
         project = None
 
@@ -1751,10 +1745,7 @@ def add_maintenance():
 # =========================================================
 #                    RUN APP
 # =========================================================
-
+with app.app_context():
+    db.create_all()
 if __name__ == "__main__":
-
-    with app.app_context():
-        db.create_all()
-
     app.run(debug=True)
