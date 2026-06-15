@@ -20,5 +20,5 @@ logs
 # VS Code
 .vscode/
 
-# OS
+#OS
 .DS_Store
