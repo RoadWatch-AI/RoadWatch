@@ -771,7 +771,7 @@ onMouseLeave={(e) =>
           📋 Recent Complaints
         </h2>
 
-        {/* FILTERS */}
+        
 
         <div style={filterBar}>
 
