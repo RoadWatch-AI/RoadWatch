@@ -292,9 +292,9 @@ def detect_anomaly(
                 "Delayed Maintenance Response"
             )
 
-    # =====================================================
+    # ====================================================
     # ROAD-BASED BUDGET CONCERN
-    # =====================================================
+    # ====================================================
 
     road_complaints_count = Complaint.query.filter_by(
         road_name=complaint.road_name
