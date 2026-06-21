@@ -10,7 +10,7 @@ RoadWatch AI is a smart mobility infrastructure monitoring platform designed to 
 
 The system helps citizens report road issues, enables authorities to manage maintenance operations efficiently, and improves transparency between citizens and government departments.
 
----
+----
 
 ## Problem Statement
 
