@@ -277,7 +277,7 @@ fetch(
 
       );
 
-// ================= FETCH MAINTENANCE =================
+
 
 const fetchMaintenance = async (
   complaintId
