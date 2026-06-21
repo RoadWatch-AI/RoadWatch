@@ -9,7 +9,7 @@ backend/uploads/
 # Node
 node_modules/
 
-# Environment files
+# Environment file
 .env
 .env.*
 
